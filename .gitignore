@@ -2,3 +2,4 @@
 *.output 
 *.tab.* 
 julia_compiler
+.vscode/*
