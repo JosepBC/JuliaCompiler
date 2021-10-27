@@ -1,0 +1,4 @@
+*.yy.c 
+*.output 
+*.tab.* 
+julia_compiler
