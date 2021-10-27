@@ -1,65 +1,91 @@
-%define parse.error verbose
+%code requires {
+    #include "types.h"
+}
+
 %{
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include <string.h>
-    
-  enum type{int, string, bool, float}
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    #include "symtab.h"
+    #define DEBUG 1
 
-  int yylex();
-  extern FILE* yyin;
-  int yyerror(const char *s);
-  FILE* csv;
-
-  int filas = 0;
-  int cols = 0;
-
-  char delimiter = ',';
-  int max_files = -1;
-
-  int first_col = 1;
-
-  char *csv_file = "out.csv";
-
-  void set_atr(char *s);
-  void print_val(char *s);
+    int yylex();
+    extern FILE* yyin;
+    int yyerror(const char *s);
 %}
 
-%union {
-    char *str;
-    int i;
-    float f;
-    unsigned char b;
+%define parse.error verbose
+
+
+%union { 
+    Variable var;
+    char* str;
 };
 
 %token<str> ID
-%token<i> INT
-%token<f> FLOAT
-%token<str> STRING 
-%token<b> BOOL
+%token<var> INT
+%token<var> FLOAT
+%token<var> STRING 
+%token<var> BOOL
 %token EQUALS
 %token ENTER
 
+%type<var> int_expression;
+%type<var> float_expression;
+%type<var> string_expression;
+%type<var> bool_expression;
+%type<var> expression;
+%type<str> id_expression;
 %%
 prog : sentence_list ;
 sentence_list : sentence_list sentence ENTER | sentence ENTER;
 sentence : assignation_sentence | expression;
-assignation_sentence : ID EQUALS expression;
-expression : int_expression | float_expression | string_expression | bool_expression;
-int_expression : INT {
-    printf("Int %i\n", $1);
+assignation_sentence : ID EQUALS expression {
+    Variable v;
+    v.var_name = $1;
+    v.type = $3.type;
+    switch(v.type) {
+        case Int64:
+            v.val.Int64 = $3.val.Int64;
+            break;
+        case Float64:
+            v.val.Float64 = $3.val.Float64;
+            break;
+        case String:
+            v.val.String = $3.val.String;
+            break;
+        case Bool:
+            v.val.Bool = $3.val.Bool;
+            break;
+        default:
+            yyerror("Unknown type\n");
+    }
+    store_val(v, DEBUG);
+};
 
+expression : int_expression {$$ = $1;} | float_expression {$$ = $1;} | string_expression {$$ = $1;} | bool_expression {$$ = $1;} | id_expression {show_val($1, DEBUG);};
+
+int_expression : INT {
+    $$ = $1;
 };
+
 float_expression : FLOAT {
-    printf("float %f\n", $1);
+    $$ = $1;
 };
+
 string_expression : STRING {
-    printf("string %s\n", $1);
+    $$ = $1;
 };
+
 bool_expression : BOOL {
-    printf("bool %i\n", $1);
+    $$ = $1;
+};
+
+id_expression : ID {
+    $$ = $1;
 };
 %%
+
 int yyerror(const char *s) {
     fprintf(stderr, "Error: %s\n",  s);
     exit(EXIT_FAILURE);
