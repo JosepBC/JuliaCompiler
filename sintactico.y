@@ -3,6 +3,8 @@
   #include <stdio.h>
   #include <stdlib.h>
   #include <string.h>
+    
+  enum type{int, string, bool, float}
 
   int yylex();
   extern FILE* yyin;
@@ -46,6 +48,7 @@ assignation_sentence : ID EQUALS expression;
 expression : int_expression | float_expression | string_expression | bool_expression;
 int_expression : INT {
     printf("Int %i\n", $1);
+
 };
 float_expression : FLOAT {
     printf("float %f\n", $1);

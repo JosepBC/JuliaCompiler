@@ -5,15 +5,18 @@
   #include <stdio.h>
   #include <string.h>
 %}
-f                       -?[0-9]+([.,][0-9]+)?(e-?[0-9]+)?
+letter                  [a-zA-Z]
+digit                   [0-9]
+letterDigit             [a-zA-Z0-9]
+f                       -?{digit}+([.,]{digit}+)?(e-?{digit}+)?
 string                  \".*\"
-i                       -?[0-9]+
+i                       -?{digit}+
 enter                   \n
 equal                   =
 b                       (true|false)
-id                      [a-zA-Z]+(_?[a-zA-Z0-9]+)*
+id                      {letter}+(_?{letterDigit}+)*
 space                   " "
-bad_id                  [a-zA-Z0-9]+(_?[a-zA-Z0-9]+)*
+bad_id                  {letterDigit}+(_?{letterDigit}+)*
 comment                 #.*\n?
 multi_line_comment      #=(.*|\n)*=#
 %%
