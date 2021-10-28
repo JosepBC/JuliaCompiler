@@ -31,8 +31,6 @@ void debug_print(char* str, Variable var) {
 
 void store_val(Variable var, int debug) {
     if(sym_add(var.var_name, &var) != SYMTAB_OK) error("Error when storing value in symtab!\n");
-    Variable v;
-    int ret = sym_lookup(var.var_name, &v);
     if(debug == 1) debug_print("store_val", var);
 }
 
