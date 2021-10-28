@@ -139,9 +139,4 @@ void fill_vector(char *in_str, Variable *var) {
             error("Ilegal type in vector!");
             break;
     }
-
-    if(var->type == Int64Vector) {
-
-    }
-    
 }
