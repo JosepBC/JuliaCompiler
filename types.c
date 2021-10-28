@@ -40,6 +40,23 @@ void symtab_error_handle(const char *str, int error_code) {
     }
 }
 
+void print_vector(Variable v) {
+    printf("[print_vector types.c] ");
+    switch (v.type) {
+        case Int64Vector:
+            for(int i = 0; i < v.val.Int64Vector.n_elem; i++) printf("%i ", v.val.Int64Vector.v[i]);
+            printf("\n");
+            break;
+        case Float64Vector:
+            for(int i = 0; i < v.val.Float64Vector.n_elem; i++) printf("%f ", v.val.Float64Vector.v[i]);
+            printf("\n");
+            break;
+        default:
+            error("Ilegal type in print_vector!");
+            break;
+    }
+}
+
 void debug_print(char* str, Variable var) {
         switch (var.type) {
             case Int64:
@@ -54,8 +71,16 @@ void debug_print(char* str, Variable var) {
             case Bool:
                 printf("[DEBUG %s] Bool %s = %i\n", str, var.var_name, var.val.Bool);
                 break;
+            case Int64Vector:
+                printf("[DEBUG %s] Int64Vector %s = ", str, var.var_name);
+                print_vector(var);
+                break;
+            case Float64Vector:
+                printf("[DEBUG %s] Float64Vector %s = ", str, var.var_name);
+                print_vector(var);
+                break;
             default:
-                printf("Unknown type: %i\n", var.type);
+                printf("Unknown type in debug_print: %i\n", var.type);
                 break;
         }
 }
@@ -84,5 +109,39 @@ void crop_first_last_elem(char **str) {
 }
 
 void fill_vector(char *in_str, Variable *var) {
+    printf("[DEBUG fill_vector types.c] Vector string: %s\n", in_str);
+    int n_elem = 1;
+    for(int i = 0; in_str[i] != '\0'; i++) {
+        if(in_str[i] == ';') n_elem++;
+    }
+    printf("[DEBUG fill_vector types.c] Nelem in vector = %i\n", n_elem);
 
+    switch (var->type) {
+        case Int64Vector:
+            var->val.Int64Vector.n_elem = n_elem;
+            var->val.Int64Vector.v = (int *) malloc(sizeof(int) * n_elem);
+            char *token = strtok(in_str, ";");
+            for(int i = 0; i < n_elem && token != NULL; i++) {
+                var->val.Int64Vector.v[i] = atoi(token);
+                token = strtok(NULL, ";");
+            }
+            break;
+        case Float64Vector:
+            var->val.Float64Vector.n_elem = n_elem;
+            var->val.Float64Vector.v = (float *) malloc(sizeof(float) * n_elem);
+            char *t = strtok(in_str, ";");
+            for(int i = 0; i < n_elem && t != NULL; i++) {
+                var->val.Float64Vector.v[i] = atof(t);
+                t = strtok(NULL, ";");
+            }
+            break;
+        default:
+            error("Ilegal type in vector!");
+            break;
+    }
+
+    if(var->type == Int64Vector) {
+
+    }
+    
 }

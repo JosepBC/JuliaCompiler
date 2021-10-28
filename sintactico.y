@@ -27,6 +27,8 @@
 %token<var> FLOAT
 %token<var> STRING 
 %token<var> BOOL
+%token<var> INTEGER_VECTOR
+%token<var> FLOAT_VECTOR
 %token EQUALS
 %token ENTER
 
@@ -36,6 +38,9 @@
 %type<var> bool_expression;
 %type<var> expression;
 %type<str> id_expression;
+%type<var> int_vector_expression;
+%type<var> float_vector_expression;
+
 %%
 prog : sentence_list ;
 sentence_list : sentence_list sentence ENTER | sentence ENTER;
@@ -57,13 +62,19 @@ assignation_sentence : ID EQUALS expression {
         case Bool:
             v.val.Bool = $3.val.Bool;
             break;
+        case Int64Vector:
+            v.val.Int64Vector = $3.val.Int64Vector;
+            break;
+        case Float64Vector:
+            v.val.Float64Vector = $3.val.Float64Vector;
+            break;
         default:
             yyerror("Unknown type\n");
     }
     store_val(v, DEBUG);
 };
 
-expression : int_expression {$$ = $1;} | float_expression {$$ = $1;} | string_expression {$$ = $1;} | bool_expression {$$ = $1;} | id_expression {show_val($1, DEBUG);};
+expression : int_expression {$$ = $1;} | float_expression {$$ = $1;} | string_expression {$$ = $1;} | bool_expression {$$ = $1;} | id_expression {show_val($1, DEBUG);} | int_vector_expression {$$ = $1;} | float_vector_expression {$$ = $1;};
 
 int_expression : INT {
     $$ = $1;
@@ -84,6 +95,17 @@ bool_expression : BOOL {
 id_expression : ID {
     $$ = $1;
 };
+
+int_vector_expression : INTEGER_VECTOR {
+    $$ = $1;
+    //printf("Int vector\n");
+};
+
+float_vector_expression : FLOAT_VECTOR {
+    $$ = $1;
+    //printf("Float vector\n");
+};
+
 %%
 
 int yyerror(const char *s) {

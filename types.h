@@ -23,5 +23,6 @@ extern void store_val(Variable var, int debug);
 extern void show_val(char *key, int debug);
 extern void fill_vector(char *in_str, Variable *var);
 extern void crop_first_last_elem(char **str);
+extern void print_vector(Variable v);
 
 #endif
