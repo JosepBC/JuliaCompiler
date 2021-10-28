@@ -30,7 +30,12 @@ void debug_print(char* str, Variable var) {
 }
 
 void store_val(Variable var, int debug) {
-    if(sym_add(var.var_name, &var) != SYMTAB_OK) error("Error when storing value in symtab!\n");
+    int ret = sym_add(var.var_name, &var);
+    if(ret == SYMTAB_DUPLICATE) {
+        if(sym_remove(var.var_name) != SYMTAB_OK) error("Error while removing the var to store new val!");
+        ret = sym_add(var.var_name, &var);
+    }
+    if(ret != SYMTAB_OK) error("Error when storing value in symtab!\n");
     if(debug == 1) debug_print("store_val", var);
 }
 
