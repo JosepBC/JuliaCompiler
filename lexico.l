@@ -24,7 +24,8 @@ integer_vector          \[({i};{space}*)*{i}\]
 unique_integer_vector   \[{i}\]
 float_vector            \[({f};{space}*)*{f}\]
 unique_float_vector     \[{f}\]
-int_matrix              \[(({i}{space}*)*;)*({i}{space}*)*\]
+int_matrix              \[({i}{space}*)*;{space}*({i}{space}*)*\]
+float_matrix            \[({f}{space}*)*;{space}*({f}{space}*)*\]
 %%
 
 {equal} {return EQUALS;}
@@ -100,6 +101,11 @@ int_matrix              \[(({i}{space}*)*;)*({i}{space}*)*\]
     //yyval.var.type = Int64Matrix;
     //crop_first_last_elem(&yytext);
     return INT_MATRIX;
+}
+
+{float_matrix} {
+    printf("[FLEX Debug] Float matrix: %s\n", yytext);    
+    return FLOAT_MATRIX;
 }
 
 {space}|{comment}|{multi_line_comment} {printf("[FLEX Debug] Comment, multiline comment, space\n");}

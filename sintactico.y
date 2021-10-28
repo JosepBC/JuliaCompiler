@@ -32,6 +32,7 @@
 %token EQUALS
 %token ENTER
 %token<var> INT_MATRIX
+%token<var> FLOAT_MATRIX
 
 %type<var> int_expression;
 %type<var> float_expression;
@@ -41,7 +42,8 @@
 %type<str> id_expression;
 %type<var> int_vector_expression;
 %type<var> float_vector_expression;
-%type<var> int_matrix;
+%type<var> int_matrix_expression;
+%type<var> float_matrix_expression;
 
 %%
 prog : sentence_list ;
@@ -71,14 +73,20 @@ assignation_sentence : ID EQUALS expression {
             v.val.Float64Vector = $3.val.Float64Vector;
             break;
         case Int64Matrix:
+        case Float64Matrix:
             printf("Matrix\n");
+            break;
         default:
             yyerror("Unknown type\n");
     }
     store_val(v, DEBUG);
 };
 
-expression : int_expression {$$ = $1;} | float_expression {$$ = $1;} | string_expression {$$ = $1;} | bool_expression {$$ = $1;} | id_expression {show_val($1, DEBUG);} | int_vector_expression {$$ = $1;} | float_vector_expression {$$ = $1;} | int_matrix {$$ = $1;};
+expression : int_expression {$$ = $1;} | float_expression {$$ = $1;} | 
+            string_expression {$$ = $1;} | bool_expression {$$ = $1;} | 
+            id_expression {show_val($1, DEBUG);} | int_vector_expression {$$ = $1;} | 
+            float_vector_expression {$$ = $1;} | int_matrix_expression {$$ = $1;} |
+            float_matrix_expression {$$ = $1;};
 
 int_expression : INT {
     $$ = $1;
@@ -110,9 +118,14 @@ float_vector_expression : FLOAT_VECTOR {
     //printf("Float vector\n");
 };
 
-int_matrix : INT_MATRIX{
+int_matrix_expression : INT_MATRIX{
     $$ = $1;
     printf("Int matrix\n");
+}
+
+float_matrix_expression : FLOAT_MATRIX{
+    $$ = $1;
+    printf("Float matrix\n");
 }
 
 %%
