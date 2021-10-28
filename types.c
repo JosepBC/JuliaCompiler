@@ -77,3 +77,12 @@ void show_val(char *key, int debug) {
     if(ret != SYMTAB_OK) symtab_error_handle("loockup in show val!", ret);
     if(debug == 1) debug_print("show_val", v);
 }
+
+void crop_first_last_elem(char **str) {
+    *str = *str + 1;
+    (*str)[strlen(*str) - 1] = '\0';
+}
+
+void fill_vector(char *in_str, Variable *var) {
+
+}
