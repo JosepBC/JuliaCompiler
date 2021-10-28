@@ -2,7 +2,7 @@
 #define TYPES_HEADER
 typedef struct Variable_t {
     char *var_name;
-    enum type_t{Int64, Float64, String, Bool, Int64Vector, Float64Vector} type;
+    enum type_t{Int64, Float64, String, Bool, Int64Vector, Float64Vector, Int64Matrix, Float64Matrix} type;
     union {
         char *String;
         int Int64;
@@ -16,6 +16,16 @@ typedef struct Variable_t {
             float *v;
             int n_elem;
         } Float64Vector;
+        struct Int64Matrix {
+            int **m;
+            int n_filas;
+            int n_cols;
+        } Int64Matrix;
+        struct Float64Matrix {
+            float **m;
+            int n_filas;
+            int n_cols;
+        } Float64Matrix;
     } val;
 } Variable;
 
