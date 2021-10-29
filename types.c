@@ -85,6 +85,37 @@ void debug_print(char* str, Variable var) {
         }
 }
 
+void crop_first_last_elem(char **str) {
+    *str = *str + 1;
+    (*str)[strlen(*str) - 1] = '\0';
+}
+
+
+void print_matrix(Variable v) {
+    printf("Variable matrix\n");
+    switch (v.type) {
+        case Int64Matrix:
+            for(int i = 0; i < v.val.Int64Matrix.n_rows; i++) {
+                for(int j = 0; j < v.val.Int64Matrix.n_cols; j++){
+                    printf("%i ", v.val.Int64Matrix.m[i * v.val.Int64Matrix.n_cols + j]);
+                }
+                printf("\n");
+            }
+            break;
+        case Float64Matrix:
+            for(int i = 0; i < v.val.Float64Matrix.n_rows; i++) {
+                for(int j = 0; j < v.val.Float64Matrix.n_cols; j++){
+                    printf("%f ", v.val.Float64Matrix.m[i * v.val.Float64Matrix.n_cols + j]);
+                }
+                printf("\n");
+            }
+            break;
+        default:
+            error("Ilegal type in print_matrix");
+            break;
+    }
+}
+
 void store_val(Variable var, int debug) {
     int ret = sym_add(var.var_name, &var);
     if(ret == SYMTAB_DUPLICATE) {
@@ -101,11 +132,6 @@ void show_val(char *key, int debug) {
     int ret = sym_lookup(key, &v);
     if(ret != SYMTAB_OK) symtab_error_handle("loockup in show val!", ret);
     if(debug == 1) debug_print("show_val", v);
-}
-
-void crop_first_last_elem(char **str) {
-    *str = *str + 1;
-    (*str)[strlen(*str) - 1] = '\0';
 }
 
 void fill_vector(char *in_str, Variable *var) {
@@ -138,5 +164,61 @@ void fill_vector(char *in_str, Variable *var) {
         default:
             error("Ilegal type in vector!");
             break;
+    }
+}
+
+void print_node_col(NodeCol *col) {
+    while(col != NULL) {
+        printf("%i ", col->val.val.Int64);
+        col = col->next;
+    }
+    printf("\n");
+}
+
+void print_node_row(NodeRow *row) {
+    printf("Dyn Matrix:\n");
+    while(row != NULL) {
+        print_node_col(row->val);
+        row = row->next;
+    }
+}
+
+void store_matrix(NodeRow *row, Variable *var) {
+    if(row->row_type == Int64) var->type = Int64Matrix;
+    else if(row->row_type == Float64) var->type = Float64Matrix;
+    else error("Ilegal type in matrix!");
+    NodeRow *r = row;
+    switch (var->type) {
+        case Int64Matrix: {
+                var->val.Int64Matrix.m = (int *) malloc(sizeof(int) * row->n_elem_row * row->val->n_elem_col);
+                int *ptr = var->val.Int64Matrix.m;
+                var->val.Int64Matrix.n_cols = row->val->n_elem_col;
+                var->val.Int64Matrix.n_rows = row->n_elem_row;
+                while(r != NULL) {
+                    NodeCol *c = r->val;
+                    while(c != NULL) {
+                        *(ptr++) = c->val.val.Int64;
+                        c = c->next;
+                    }
+                    r = r->next;
+                }
+            }
+            break;
+        case Float64Matrix: {
+                var->val.Float64Matrix.m = (float *) malloc(sizeof(float) * row->n_elem_row * row->val->n_elem_col);
+                float *ptr = var->val.Float64Matrix.m;
+                var->val.Float64Matrix.n_cols = row->val->n_elem_col;
+                var->val.Float64Matrix.n_rows = row->n_elem_row;
+                while(r != NULL) {
+                    NodeCol *c = r->val;
+                    while(c != NULL) {
+                        *(ptr++) = c->val.val.Float64;
+                        c = c->next;
+                    }
+                    r = r->next;
+                }
+            }
+            break;
+    
     }
 }

@@ -19,7 +19,9 @@
 
 %union { 
     Variable var;
-    char* str;
+    char *str;
+    NodeRow *nr;
+    NodeCol *nc;
 };
 
 %token<str> ID
@@ -33,6 +35,9 @@
 %token ENTER
 %token<var> INT_MATRIX
 %token<var> FLOAT_MATRIX
+%token OPEN_M
+%token CLOSE_M
+%token SEMICOLON
 
 %type<var> int_expression;
 %type<var> float_expression;
@@ -40,10 +45,11 @@
 %type<var> bool_expression;
 %type<var> expression;
 %type<str> id_expression;
-%type<var> int_vector_expression;
-%type<var> float_vector_expression;
-%type<var> int_matrix_expression;
-%type<var> float_matrix_expression;
+%type<var> number;
+%type<nc> number_list;
+%type<nr> row_list;
+%type<nc> row;
+%type<var> m;
 
 %%
 prog : sentence_list ;
@@ -84,9 +90,7 @@ assignation_sentence : ID EQUALS expression {
 
 expression : int_expression {$$ = $1;} | float_expression {$$ = $1;} | 
             string_expression {$$ = $1;} | bool_expression {$$ = $1;} | 
-            id_expression {show_val($1, DEBUG);} | int_vector_expression {$$ = $1;} | 
-            float_vector_expression {$$ = $1;} | int_matrix_expression {$$ = $1;} |
-            float_matrix_expression {$$ = $1;};
+            id_expression {show_val($1, DEBUG);} | m {$$ = $1;};
 
 int_expression : INT {
     $$ = $1;
@@ -108,25 +112,52 @@ id_expression : ID {
     $$ = $1;
 };
 
-int_vector_expression : INTEGER_VECTOR {
-    $$ = $1;
-    //printf("Int vector\n");
+m : OPEN_M row_list CLOSE_M {
+    print_node_row($2);
+    store_matrix($2, &$$);
+    print_matrix($$);
 };
 
-float_vector_expression : FLOAT_VECTOR {
-    $$ = $1;
-    //printf("Float vector\n");
+row_list : row SEMICOLON row_list {
+    $$ = (NodeRow*) malloc(sizeof(NodeRow));
+    $$->val = $1;
+    $$->next = $3;
+    $$->n_elem_row = $3->n_elem_row + 1;
+    $$->row_type = $1->col_type == Float64 || $3->row_type == Float64 ? Float64 : Int64;
+} | row {
+    $$ = (NodeRow*) malloc(sizeof(NodeRow));
+    $$->val = $1;
+    $$->next = NULL;
+    $$->row_type = $1->col_type;
+    $$->n_elem_row = 1;
 };
 
-int_matrix_expression : INT_MATRIX{
+row : number_list {
     $$ = $1;
-    printf("Int matrix\n");
-}
 
-float_matrix_expression : FLOAT_MATRIX{
+};
+
+number_list : number number_list {
+    //Creamos toda la lista
+    $$ = (NodeCol*) malloc(sizeof(NodeCol));
+    $$->val = $1;
+    $$->next = $2;
+    $$->n_elem_col = $2->n_elem_col + 1;
+    $$->col_type = $1.type == Float64 || $2->col_type == Float64 ? Float64 : Int64;
+} | number {
+    //Creamos un nodo con toda la info de un numero
+    $$ = (NodeCol*) malloc(sizeof(NodeCol));
+    $$->val = $1;
+    $$->next = NULL;
+    $$->n_elem_col = 1;
+    $$->col_type = $1.type;
+};
+
+number : INT {
     $$ = $1;
-    printf("Float matrix\n");
-}
+} | FLOAT {
+    $$ = $1;
+};
 
 %%
 
