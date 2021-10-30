@@ -72,12 +72,20 @@ void debug_print(char* str, Variable var) {
                 printf("[DEBUG %s] Bool %s = %i\n", str, var.var_name, var.val.Bool);
                 break;
             case Int64Vector:
-                printf("[DEBUG %s] Int64Vector %s = ", str, var.var_name);
+                printf("[DEBUG %s] Int64Vector %s = \n", str, var.var_name);
                 print_vector(var);
                 break;
             case Float64Vector:
-                printf("[DEBUG %s] Float64Vector %s = ", str, var.var_name);
+                printf("[DEBUG %s] Float64Vector %s = \n", str, var.var_name);
                 print_vector(var);
+                break;
+            case Int64Matrix:
+                printf("[DEBUG %s] Int64Matrix %s = \n", str, var.var_name);
+                print_matrix(var);
+                break;
+            case Float64Matrix:
+                printf("[DEBUG %s] Float64Matrix %s = \n", str, var.var_name);
+                print_matrix(var);
                 break;
             default:
                 printf("Unknown type in debug_print: %i\n", var.type);
@@ -90,9 +98,7 @@ void crop_first_last_elem(char **str) {
     (*str)[strlen(*str) - 1] = '\0';
 }
 
-
 void print_matrix(Variable v) {
-    printf("Variable matrix\n");
     switch (v.type) {
         case Int64Matrix:
             for(int i = 0; i < v.val.Int64Matrix.n_rows; i++) {
@@ -117,6 +123,7 @@ void print_matrix(Variable v) {
 }
 
 void store_val(Variable var, int debug) {
+    if(debug == 1) debug_print("store_val", var);
     int ret = sym_add(var.var_name, &var);
     if(ret == SYMTAB_DUPLICATE) {
         ret = sym_remove(var.var_name);
@@ -124,7 +131,6 @@ void store_val(Variable var, int debug) {
         ret = sym_add(var.var_name, &var);
     }
     if(ret != SYMTAB_OK) symtab_error_handle("storing value in symtab in store_val!", ret);
-    if(debug == 1) debug_print("store_val", var);
 }
 
 void show_val(char *key, int debug) {
@@ -168,11 +174,26 @@ void fill_vector(char *in_str, Variable *var) {
 }
 
 void print_node_col(NodeCol *col) {
-    while(col != NULL) {
-        printf("%i ", col->val.val.Int64);
-        col = col->next;
+    switch (col->col_type) {
+       case Int64:
+           while(col != NULL) {
+               printf("%i ", col->val.val.Int64);
+               col = col->next;
+           }
+           printf("\n");
+           break;
+       case Float64:
+           while(col != NULL) {
+               printf("%f ", col->val.val.Float64);
+               col = col->next;
+           }
+           printf("\n");
+           break;
+       default:
+           error("Ilegal type in matrix!");
+           break;
     }
-    printf("\n");
+
 }
 
 void print_node_row(NodeRow *row) {

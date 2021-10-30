@@ -9,7 +9,7 @@
 letter                  [a-zA-Z]
 digit                   [0-9]
 letterDigit             [a-zA-Z0-9]
-f                       -?{digit}+([.,]{digit}+)?(e-?{digit}+)?
+f                       -?{digit}+([.]{digit}+)?(e-?{digit}+)?
 string                  \".*\"
 i                       -?{digit}+
 enter                   \n

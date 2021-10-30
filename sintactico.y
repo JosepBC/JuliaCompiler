@@ -24,7 +24,7 @@
     NodeCol *nc;
 };
 
-%token<str> ID
+%token<var> ID
 %token<var> INT
 %token<var> FLOAT
 %token<var> STRING 
@@ -57,7 +57,7 @@ sentence_list : sentence_list sentence ENTER | sentence ENTER;
 sentence : assignation_sentence | expression;
 assignation_sentence : ID EQUALS expression {
     Variable v;
-    v.var_name = $1;
+    v.var_name = $1.var_name;
     v.type = $3.type;
     switch(v.type) {
         case Int64:
@@ -79,8 +79,10 @@ assignation_sentence : ID EQUALS expression {
             v.val.Float64Vector = $3.val.Float64Vector;
             break;
         case Int64Matrix:
+            v.val.Int64Matrix = $3.val.Int64Matrix;
+            break;
         case Float64Matrix:
-            printf("Matrix\n");
+            v.val.Float64Matrix = $3.val.Float64Matrix;
             break;
         default:
             yyerror("Unknown type\n");
@@ -109,7 +111,7 @@ bool_expression : BOOL {
 };
 
 id_expression : ID {
-    $$ = $1;
+    $$ = $1.var_name;
 };
 
 m : OPEN_M row_list CLOSE_M {
