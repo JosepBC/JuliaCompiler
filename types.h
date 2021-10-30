@@ -1,5 +1,6 @@
 #ifndef TYPES_HEADER
 #define TYPES_HEADER
+#define DEBUG 1
 typedef enum Type_t {Int64, Float64, String, Bool, Int64Vector, Float64Vector, Int64Matrix, Float64Matrix} Type;
 typedef struct Variable_t {
     Type type;
@@ -44,8 +45,8 @@ typedef struct Node_row_t {
     Type row_type;
 } NodeRow;
 
-extern void store_val(Variable var, int debug);
-extern void show_val(char *key, int debug);
+extern void store_val(Variable var);
+extern void show_val(char *key);
 extern void fill_vector(char *in_str, Variable *var);
 extern void crop_first_last_elem(char **str);
 extern void print_vector(Variable v);
@@ -53,5 +54,6 @@ extern void print_matrix(Variable v);
 extern void print_node_row(NodeRow *row);
 extern void print_node_col(NodeCol *col);
 extern void store_matrix(NodeRow *row, Variable *var);
+extern void print_var(char* str, Variable var);
 
 #endif

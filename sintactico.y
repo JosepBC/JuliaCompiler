@@ -7,7 +7,6 @@
     #include <stdlib.h>
     #include <string.h>
     #include "symtab.h"
-    #define DEBUG 1
 
     int yylex();
     extern FILE* yyin;
@@ -87,12 +86,12 @@ assignation_sentence : ID EQUALS expression {
         default:
             yyerror("Unknown type\n");
     }
-    store_val(v, DEBUG);
+    store_val(v);
 };
 
 expression : int_expression {$$ = $1;} | float_expression {$$ = $1;} | 
             string_expression {$$ = $1;} | bool_expression {$$ = $1;} | 
-            id_expression {show_val($1, DEBUG);} | m {$$ = $1;};
+            id_expression {show_val($1);} | m {$$ = $1;};
 
 int_expression : INT {
     $$ = $1;
@@ -115,9 +114,9 @@ id_expression : ID {
 };
 
 m : OPEN_M row_list CLOSE_M {
-    print_node_row($2);
+    if(DEBUG) print_node_row($2);
     store_matrix($2, &$$);
-    print_matrix($$);
+    print_var("matrix declaration", $$);
 };
 
 row_list : row SEMICOLON row_list {
