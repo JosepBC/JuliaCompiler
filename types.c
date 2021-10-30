@@ -217,6 +217,7 @@ void store_matrix(NodeRow *row, Variable *var) {
                 var->val.Int64Matrix.n_rows = row->n_elem_row;
                 while(r != NULL) {
                     NodeCol *c = r->val;
+                    if(c->n_elem_col != var->val.Int64Matrix.n_cols)  error("Error, matrix must be complete\n");
                     while(c != NULL) {
                         *(ptr++) = c->val.val.Int64;
                         c = c->next;
@@ -232,6 +233,7 @@ void store_matrix(NodeRow *row, Variable *var) {
                 var->val.Float64Matrix.n_rows = row->n_elem_row;
                 while(r != NULL) {
                     NodeCol *c = r->val;
+                    if(c->n_elem_col != var->val.Float64Matrix.n_cols)  error("Error, matrix must be complete\n");
                     while(c != NULL) {
                         *(ptr++) = c->val.val.Float64;
                         c = c->next;
