@@ -28,12 +28,8 @@
 %token<var> FLOAT
 %token<var> STRING 
 %token<var> BOOL
-%token<var> INTEGER_VECTOR
-%token<var> FLOAT_VECTOR
 %token EQUALS
 %token ENTER
-%token<var> INT_MATRIX
-%token<var> FLOAT_MATRIX
 %token OPEN_M
 %token CLOSE_M
 %token SEMICOLON
