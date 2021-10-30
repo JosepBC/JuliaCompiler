@@ -131,7 +131,7 @@ void print_matrix(Variable v) {
 }
 
 void store_val(Variable var) {
-    if(DEBUG) print_var("store_val", var);
+    print_var("store_val", var);
     int ret = sym_add(var.var_name, &var);
     if(ret == SYMTAB_DUPLICATE) {
         ret = sym_remove(var.var_name);

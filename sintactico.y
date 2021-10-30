@@ -116,7 +116,7 @@ id_expression : ID {
 m : OPEN_M row_list CLOSE_M {
     if(DEBUG) print_node_row($2);
     store_matrix($2, &$$);
-    print_var("matrix declaration", $$);
+    if(DEBUG) print_var("matrix declaration", $$);
 };
 
 row_list : row SEMICOLON row_list {
