@@ -5,7 +5,7 @@
 #include "symtab.h"
 
 void error(char *str) {
-    printf("%s", str);
+    printf("%s\n", str);
     exit(1);
 }
 
@@ -214,9 +214,12 @@ void print_node_row(NodeRow *row) {
 
 void store_matrix(NodeRow *row, Variable *var) {
     if(row->n_elem_row == 1 && row->val->n_elem_col == 1) var->type = row->row_type;
+    else if(row->val->n_elem_col == 1 && row->row_type == Int64) var->type = Int64Vector;
+    else if(row->val->n_elem_col == 1 && row->row_type == Float64) var->type = Float64Vector;
     else if(row->row_type == Int64) var->type = Int64Matrix;
     else if(row->row_type == Float64) var->type = Float64Matrix;
     else error("Ilegal type in matrix!");
+
 
     NodeRow *r = row;
     switch (var->type) {
@@ -227,7 +230,7 @@ void store_matrix(NodeRow *row, Variable *var) {
                 var->val.Int64Matrix.n_rows = row->n_elem_row;
                 while(r != NULL) {
                     NodeCol *c = r->val;
-                    if(c->n_elem_col != var->val.Int64Matrix.n_cols)  error("Error, matrix must be complete\n");
+                    if(c->n_elem_col != var->val.Int64Matrix.n_cols)  error("Error, matrix must be complete");
                     while(c != NULL) {
                         *(ptr++) = c->val.val.Int64;
                         c = c->next;
@@ -243,11 +246,33 @@ void store_matrix(NodeRow *row, Variable *var) {
                 var->val.Float64Matrix.n_rows = row->n_elem_row;
                 while(r != NULL) {
                     NodeCol *c = r->val;
-                    if(c->n_elem_col != var->val.Float64Matrix.n_cols)  error("Error, matrix must be complete\n");
+                    if(c->n_elem_col != var->val.Float64Matrix.n_cols)  error("Error, matrix must be complete");
                     while(c != NULL) {
                         *(ptr++) = c->val.val.Float64;
                         c = c->next;
                     }
+                    r = r->next;
+                }
+            }
+            break;
+        case Int64Vector: {
+                var->val.Int64Vector.v = (int *) malloc(sizeof(int) * row->n_elem_row);
+                int *ptr = var->val.Int64Vector.v;
+                var->val.Int64Vector.n_elem = row->n_elem_row;
+                while(r != NULL) {
+                    if(r->val->n_elem_col != 1) error("Error, vector can't have more than one column!");
+                    *(ptr++) = r->val->val.val.Int64;
+                    r = r->next;
+                }
+            }
+            break;
+        case Float64Vector: {
+                var->val.Float64Vector.v = (float *) malloc(sizeof(float) * row->n_elem_row);
+                float *ptr = var->val.Float64Vector.v;
+                var->val.Float64Vector.n_elem = row->n_elem_row;
+                while(r != NULL) {
+                    if(r->val->n_elem_col != 1) error("Error, vector can't have more than one column!");
+                    *(ptr++) = r->val->val.val.Float64;
                     r = r->next;
                 }
             }
