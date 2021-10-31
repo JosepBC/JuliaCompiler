@@ -1,6 +1,6 @@
 #ifndef TYPES_HEADER
 #define TYPES_HEADER
-#define DEBUG 1
+#define DEBUG 0
 typedef enum Type_t {Int64, Float64, String, Bool, Int64Vector, Float64Vector, Int64Matrix, Float64Matrix} Type;
 typedef struct Variable_t {
     Type type;
