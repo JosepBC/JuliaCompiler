@@ -212,6 +212,14 @@ void print_node_row(NodeRow *row) {
     }
 }
 
+int get_val_int(Variable var) {
+    return var.type == Int64 ? var.val.Int64 : var.val.Float64;
+}
+
+float get_val_float(Variable var) {
+    return var.type == Int64 ? var.val.Int64 : var.val.Float64;
+}
+
 void store_matrix(NodeRow *row, Variable *var) {
     if(row->n_elem_row == 1 && row->val->n_elem_col == 1) var->type = row->row_type;
     else if(row->val->n_elem_col == 1 && row->row_type == Int64) var->type = Int64Vector;
@@ -232,7 +240,7 @@ void store_matrix(NodeRow *row, Variable *var) {
                     NodeCol *c = r->val;
                     if(c->n_elem_col != var->val.Int64Matrix.n_cols)  error("Error, matrix must be complete");
                     while(c != NULL) {
-                        *(ptr++) = c->val.val.Int64;
+                        *(ptr++) = get_val_int(c->val);
                         c = c->next;
                     }
                     r = r->next;
@@ -248,7 +256,7 @@ void store_matrix(NodeRow *row, Variable *var) {
                     NodeCol *c = r->val;
                     if(c->n_elem_col != var->val.Float64Matrix.n_cols)  error("Error, matrix must be complete");
                     while(c != NULL) {
-                        *(ptr++) = c->val.val.Float64;
+                        *(ptr++) = get_val_float(c->val);
                         c = c->next;
                     }
                     r = r->next;
@@ -261,7 +269,7 @@ void store_matrix(NodeRow *row, Variable *var) {
                 var->val.Int64Vector.n_elem = row->n_elem_row;
                 while(r != NULL) {
                     if(r->val->n_elem_col != 1) error("Error, vector can't have more than one column!");
-                    *(ptr++) = r->val->val.val.Int64;
+                    *(ptr++) = get_val_int(r->val->val);
                     r = r->next;
                 }
             }
@@ -272,7 +280,7 @@ void store_matrix(NodeRow *row, Variable *var) {
                 var->val.Float64Vector.n_elem = row->n_elem_row;
                 while(r != NULL) {
                     if(r->val->n_elem_col != 1) error("Error, vector can't have more than one column!");
-                    *(ptr++) = r->val->val.val.Float64;
+                    *(ptr++) = get_val_float(r->val->val);
                     r = r->next;
                 }
             }
