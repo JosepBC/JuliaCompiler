@@ -23,7 +23,62 @@ multi_line_comment      #=({letterDigit}*|\n)*=#\n?
 open_m                  \[
 close_m                 \]
 semicolon               ;
+and                     &&
+or                      \|\|
+not                     !
+lower_than              <
+higher_than             >
+lower_equal             <=
+higher_equal            >=
+eq                      ==
+diff                    !=
 %%
+
+{eq} {
+    if(DEBUG) printf("[FLEX debug] bool equals\n");
+    return BOOL_EQUALS;
+}
+
+{and} {
+    if(DEBUG) printf("[FLEX debug] bool and\n");
+    return BOOL_AND;
+}
+
+{or} {
+    if(DEBUG) printf("[FLEX debug] bool or\n");
+    return BOOL_OR;
+}
+
+{not} {
+    if(DEBUG) printf("[FLEX debug] bool not\n");
+    return BOOL_NOT;
+}
+
+{lower_equal} {
+    if(DEBUG) printf("[FLEX debug] bool lower_equal\n");
+    return BOOL_LOWER_EQUAL;
+}
+
+{higher_equal} {
+    if(DEBUG) printf("[FLEX debug] bool higher_equal\n");
+    return BOOL_HIGHER_EQUAL;
+}
+
+{lower_than} {
+    if(DEBUG) printf("[FLEX debug] bool lower_than\n");
+    return BOOL_LOWER_THAN;
+}
+
+{higher_than} {
+    if(DEBUG) printf("[FLEX debug] bool higher_than\n");
+    return BOOL_HIGHER_THAN;
+}
+
+{diff} {
+    if(DEBUG) printf("[FLEX debug] bool diff\n");
+    return BOOL_DIFF;
+}
+
 
 {equal} {return EQUALS;}
 {b} {

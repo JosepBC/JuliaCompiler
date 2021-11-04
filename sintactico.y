@@ -33,11 +33,19 @@
 %token OPEN_M
 %token CLOSE_M
 %token SEMICOLON
+%token BOOL_EQUALS
+%token BOOL_AND
+%token BOOL_OR
+%token BOOL_NOT
+%token BOOL_LOWER_EQUAL
+%token BOOL_HIGHER_EQUAL
+%token BOOL_LOWER_THAN
+%token BOOL_HIGHER_THAN
+%token BOOL_DIFF
 
 %type<var> int_expression;
 %type<var> float_expression;
 %type<var> string_expression;
-%type<var> bool_expression;
 %type<var> expression;
 %type<str> id_expression;
 %type<var> number;
@@ -45,6 +53,10 @@
 %type<nr> row_list;
 %type<nc> row;
 %type<var> m;
+%type<var> boolean_expression;
+%type<var> and_list;
+%type<var> or_list;
+%type<var> not;
 
 %%
 prog : sentence_list ;
@@ -86,7 +98,7 @@ assignation_sentence : ID EQUALS expression {
 };
 
 expression : int_expression {$$ = $1;} | float_expression {$$ = $1;} | 
-            string_expression {$$ = $1;} | bool_expression {$$ = $1;} | 
+            string_expression {$$ = $1;} | boolean_expression {$$ = $1;} | 
             id_expression {show_val($1);} | m {$$ = $1;};
 
 int_expression : INT {
@@ -101,9 +113,36 @@ string_expression : STRING {
     $$ = $1;
 };
 
-bool_expression : BOOL {
+boolean_expression : or_list {
+    $$ = $1;
+    printf("Bool res: %i\n", $1.val.Bool);
+};
+
+or_list : or_list BOOL_OR and_list {
+    $$.type = Bool;
+    $$.val.Bool = $1.val.Bool || $3.val.Bool;
+} | and_list {
+    $$ = $1;
+    printf("And res: %i\n", $1.val.Bool);
+};
+
+and_list : and_list BOOL_AND not {
+    $$.type = Bool;
+    $$.val.Bool = $1.val.Bool && $3.val.Bool;
+    printf("And list\n");
+} | not {
     $$ = $1;
 };
+
+not : BOOL_NOT BOOL {
+    $$.type = Bool;
+    $$.val.Bool = !$2.val.Bool;
+    printf("Bool not: %i\n", $$.val.Bool);
+} | BOOL {
+    $$ = $1;
+    printf("Not list: %i\n", $$.val.Bool);
+};
+
 
 id_expression : ID {
     $$ = $1.var_name;
