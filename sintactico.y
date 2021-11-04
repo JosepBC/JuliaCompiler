@@ -57,6 +57,7 @@
 %type<var> and_list;
 %type<var> or_list;
 %type<var> not;
+%type<var> bool_equals_list;
 
 %%
 prog : sentence_list ;
@@ -126,13 +127,20 @@ or_list : or_list BOOL_OR and_list {
     printf("And res: %i\n", $1.val.Bool);
 };
 
-and_list : and_list BOOL_AND not {
+and_list : and_list BOOL_AND bool_equals_list {
     $$.type = Bool;
     $$.val.Bool = $1.val.Bool && $3.val.Bool;
     printf("And list\n");
-} | not {
+} | bool_equals_list {
     $$ = $1;
 };
+
+bool_equals_list : bool_equals_list BOOL_EQUALS not {
+    $$.type = Bool;
+    $$.val.Bool = $1.val.Bool == $3.val.Bool;
+} | not {
+    $$ = $1;
+}
 
 not : BOOL_NOT BOOL {
     $$.type = Bool;
