@@ -48,13 +48,14 @@
 %token ARITHMETIC_MULT
 %token ARITHMETIC_SUB
 %token ARITHMETIC_ADD
-%token COMMA
+%token OPEN_P
+%token CLOSE_P
 
 %type<var> int_expression;
 %type<var> float_expression;
 %type<var> string_expression;
 %type<var> expression;
-%type<str> id_expression;
+%type<var> id_expression;
 %type<var> number;
 %type<nc> number_list;
 %type<nr> row_list;
@@ -168,7 +169,7 @@ pow_list : pow_list ARITHMETIC_POW value {
 
 value : int_expression {$$ = $1;} | float_expression {$$ = $1;} | 
             string_expression {$$ = $1;} | boolean_expression {$$ = $1;} | 
-            id_expression {show_val($1);} | m {$$ = $1;};
+            id_expression {get_val($1.var_name, &$$);} | m {$$ = $1;} | OPEN_P add_list CLOSE_P {$$ = $2;};
 
 
 boolean_expression : or_list {
@@ -210,7 +211,7 @@ not : BOOL_NOT BOOL {
 
 
 id_expression : ID {
-    $$ = $1.var_name;
+    $$.var_name = $1.var_name;
 };
 
 m : OPEN_M row_list CLOSE_M {

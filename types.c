@@ -114,7 +114,6 @@ void do_mult(Variable v1, Variable v2, Variable *res) {
 
 }
 
-
 void add_int_vector(Variable v1, Variable v2, Variable *res) {
     for(int i = 0; i < v1.val.Int64Vector.n_elem; i++) {
         res->val.Int64Vector.v[i] = v1.val.Int64Vector.v[i] + v2.val.Int64Vector.v[i];
@@ -152,7 +151,7 @@ void sub_int_float_vector(Variable v1, Variable v2, Variable *res) {
 }
 
 void do_vector_add(Variable v1, Variable v2, Variable *res) {
-    if(is_int(v1) && is_int(v2)) {
+    if(is_int_vector(v1) && is_int_vector(v2)) {
         if(v1.val.Int64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
         
         res->type = Int64Vector;
@@ -162,7 +161,7 @@ void do_vector_add(Variable v1, Variable v2, Variable *res) {
         add_int_vector(v1, v2, res);
     }
     
-    if(is_int(v1) && is_float(v2)) {
+    if(is_int_vector(v1) && is_float_vector(v2)) {
         if(v1.val.Int64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
         
         res->type = Float64Vector;
@@ -172,7 +171,7 @@ void do_vector_add(Variable v1, Variable v2, Variable *res) {
         add_int_float_vector(v1, v2, res);
     }
 
-    if(is_float(v1) && is_int(v2)) {
+    if(is_float_vector(v1) && is_int_vector(v2)) {
         if(v1.val.Float64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
         
         res->type = Float64Vector;
@@ -182,19 +181,19 @@ void do_vector_add(Variable v1, Variable v2, Variable *res) {
         add_int_float_vector(v2, v1, res);
     }
 
-    if(is_float(v1) && is_float(v2)) {
+    if(is_float_vector(v1) && is_float_vector(v2)) {
         if(v1.val.Float64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
         
         res->type = Float64Vector;
         res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Float64Vector.n_elem);
         res->val.Float64Vector.n_elem = v1.val.Float64Vector.n_elem;
         
-        add_int_float_vector(v1, v2, res);
+        add_float_vector(v1, v2, res);
     }
 }
 
 void do_vector_sub(Variable v1, Variable v2, Variable *res) {
-    if(is_int(v1) && is_int(v2)) {
+    if(is_int_vector(v1) && is_int_vector(v2)) {
         if(v1.val.Int64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
         
         res->type = Int64Vector;
@@ -204,7 +203,7 @@ void do_vector_sub(Variable v1, Variable v2, Variable *res) {
         sub_int_vector(v1, v2, res);
     }
     
-    if(is_int(v1) && is_float(v2)) {
+    if(is_int_vector(v1) && is_float_vector(v2)) {
         if(v1.val.Int64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
         
         res->type = Float64Vector;
@@ -214,7 +213,7 @@ void do_vector_sub(Variable v1, Variable v2, Variable *res) {
         sub_int_float_vector(v1, v2, res);
     }
 
-    if(is_float(v1) && is_int(v2)) {
+    if(is_float_vector(v1) && is_int_vector(v2)) {
         if(v1.val.Float64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
         
         res->type = Float64Vector;
@@ -224,14 +223,14 @@ void do_vector_sub(Variable v1, Variable v2, Variable *res) {
         sub_int_float_vector(v2, v1, res);
     }
 
-    if(is_float(v1) && is_float(v2)) {
+    if(is_float_vector(v1) && is_float_vector(v2)) {
         if(v1.val.Float64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
         
         res->type = Float64Vector;
         res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Float64Vector.n_elem);
         res->val.Float64Vector.n_elem = v1.val.Float64Vector.n_elem;
         
-        sub_int_float_vector(v1, v2, res);
+        sub_float_vector(v1, v2, res);
     }
 }
 
@@ -431,6 +430,11 @@ void store_val(Variable var) {
         ret = sym_add(var.var_name, &var);
     }
     if(ret != SYMTAB_OK) symtab_error_handle("storing value in symtab in store_val!", ret);
+}
+
+void get_val(char *key, Variable *v) {
+    int ret = sym_lookup(key, v);
+    if(ret != SYMTAB_OK) symtab_error_handle("loockup in show val!", ret);
 }
 
 void show_val(char *key) {

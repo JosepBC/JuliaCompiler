@@ -38,7 +38,16 @@ div                     \/
 mult                    \*
 sub                     -
 add                     \+
+open_p                  \(
+close_p                 \)
 %%
+{open_p} {
+    return OPEN_P;
+}
+
+{close_p} {
+    return CLOSE_P;
+}
 
 {pow} {
     if(DEBUG) printf("[FLEX debug] pow\n");
