@@ -146,6 +146,49 @@ void do_vector_mult(Variable v1, Variable v2, Variable *res) {
     }
 }
 
+void mult_int_scalar_vector(Variable v1, Variable v2, Variable *res) {
+    if(is_int_vector(v2)) {
+        res->type = Int64Vector;
+        res->val.Int64Vector.n_elem = v2.val.Int64Vector.n_elem;
+        res->val.Int64Vector.v = (int *)malloc(sizeof(int) * v2.val.Int64Vector.n_elem);
+        for(int i = 0; i < res->val.Int64Vector.n_elem; i++) {
+            res->val.Int64Vector.v[i] = v1.val.Int64 * v2.val.Int64Vector.v[i];
+        }
+    } else {
+        res->type = Float64Vector;
+        res->val.Float64Vector.n_elem = v2.val.Float64Vector.n_elem;
+        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v2.val.Float64Vector.n_elem);
+        for(int i = 0; i < res->val.Float64Vector.n_elem; i++) {
+            res->val.Float64Vector.v[i] = v1.val.Int64 * v2.val.Float64Vector.v[i];
+        }
+    }
+}
+
+void mult_float_scalar_vector(Variable v1, Variable v2, Variable *res) {
+    res->type = Float64Vector;
+    if(is_int_vector(v2)) {
+        res->val.Float64Vector.n_elem = v2.val.Int64Vector.n_elem;
+        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v2.val.Int64Vector.n_elem);
+        for(int i = 0; i < res->val.Float64Vector.n_elem; i++) {
+            res->val.Float64Vector.v[i] = v1.val.Float64 * v2.val.Int64Vector.v[i];
+        }
+    } else {
+        res->val.Float64Vector.n_elem = v2.val.Float64Vector.n_elem;
+        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v2.val.Float64Vector.n_elem);
+        for(int i = 0; i < res->val.Float64Vector.n_elem; i++) {
+            res->val.Float64Vector.v[i] = v1.val.Float64 * v2.val.Float64Vector.v[i];
+        }
+    }
+}
+
+void do_mult_vector_scalar(Variable v1, Variable v2, Variable *res) {
+    if(is_int(v1) && is_vector(v2)) mult_int_scalar_vector(v1, v2, res);
+    if(is_float(v1) && is_vector(v2)) mult_float_scalar_vector(v1, v2, res);
+    
+    if(is_vector(v1) && is_int(v2)) mult_int_scalar_vector(v2, v1, res);
+    if(is_vector(v1) && is_float(v2)) mult_float_scalar_vector(v2, v1, res);
+}
+
 void do_mult(Variable v1, Variable v2, Variable *res) {
     if(is_int(v1) && is_int(v2)) {
         res->type = Int64;
@@ -171,6 +214,8 @@ void do_mult(Variable v1, Variable v2, Variable *res) {
         res->val.Float64 = v1.val.Float64 * v2.val.Float64;
         res->type = Float64;
     }
+
+    if(is_vector(v1) && is_int_or_float(v2) || is_int_or_float(v1) && is_vector(v2)) do_mult_vector_scalar(v1, v2, res);
 
     if(is_vector(v1) && is_vector(v2)) do_vector_mult(v1, v2, res);
 
@@ -221,9 +266,7 @@ void do_vector_add(Variable v1, Variable v2, Variable *res) {
         res->val.Int64Vector.n_elem = v1.val.Int64Vector.n_elem;
         
         add_int_vector(v1, v2, res);
-    }
-    
-    if(is_int_vector(v1) && is_float_vector(v2)) {
+    } else if(is_int_vector(v1) && is_float_vector(v2)) {
         if(v1.val.Int64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
         
         res->type = Float64Vector;
@@ -231,9 +274,7 @@ void do_vector_add(Variable v1, Variable v2, Variable *res) {
         res->val.Float64Vector.n_elem = v1.val.Int64Vector.n_elem;
         
         add_int_float_vector(v1, v2, res);
-    }
-
-    if(is_float_vector(v1) && is_int_vector(v2)) {
+    } else if(is_float_vector(v1) && is_int_vector(v2)) {
         if(v1.val.Float64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
         
         res->type = Float64Vector;
@@ -241,9 +282,7 @@ void do_vector_add(Variable v1, Variable v2, Variable *res) {
         res->val.Int64Vector.n_elem = v1.val.Float64Vector.n_elem;
         
         add_int_float_vector(v2, v1, res);
-    }
-
-    if(is_float_vector(v1) && is_float_vector(v2)) {
+    } else if(is_float_vector(v1) && is_float_vector(v2)) {
         if(v1.val.Float64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
         
         res->type = Float64Vector;
@@ -251,6 +290,8 @@ void do_vector_add(Variable v1, Variable v2, Variable *res) {
         res->val.Float64Vector.n_elem = v1.val.Float64Vector.n_elem;
         
         add_float_vector(v1, v2, res);
+    } else {
+        error("Ilegal type in vector add");
     }
 }
 
@@ -263,9 +304,7 @@ void do_vector_sub(Variable v1, Variable v2, Variable *res) {
         res->val.Int64Vector.n_elem = v1.val.Int64Vector.n_elem;
         
         sub_int_vector(v1, v2, res);
-    }
-    
-    if(is_int_vector(v1) && is_float_vector(v2)) {
+    } else if(is_int_vector(v1) && is_float_vector(v2)) {
         if(v1.val.Int64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
         
         res->type = Float64Vector;
@@ -273,9 +312,7 @@ void do_vector_sub(Variable v1, Variable v2, Variable *res) {
         res->val.Float64Vector.n_elem = v1.val.Int64Vector.n_elem;
         
         sub_int_float_vector(v1, v2, res);
-    }
-
-    if(is_float_vector(v1) && is_int_vector(v2)) {
+    } else if(is_float_vector(v1) && is_int_vector(v2)) {
         if(v1.val.Float64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
         
         res->type = Float64Vector;
@@ -283,9 +320,7 @@ void do_vector_sub(Variable v1, Variable v2, Variable *res) {
         res->val.Int64Vector.n_elem = v1.val.Float64Vector.n_elem;
         
         sub_int_float_vector(v2, v1, res);
-    }
-
-    if(is_float_vector(v1) && is_float_vector(v2)) {
+    } else if(is_float_vector(v1) && is_float_vector(v2)) {
         if(v1.val.Float64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
         
         res->type = Float64Vector;
@@ -293,6 +328,8 @@ void do_vector_sub(Variable v1, Variable v2, Variable *res) {
         res->val.Float64Vector.n_elem = v1.val.Float64Vector.n_elem;
         
         sub_float_vector(v1, v2, res);
+    } else {
+        error("Ilegal type in sub vector");
     }
 }
 
@@ -300,25 +337,19 @@ void do_sub(Variable v1, Variable v2, Variable *res) {
     if(is_int(v1) && is_int(v2)) {
         res->type = Int64;
         res->val.Int64 = v1.val.Int64 - v2.val.Int64;
-    }
-    
-    if(is_int(v1) && is_float(v2)) {
+    } else if(is_int(v1) && is_float(v2)) {
         res->val.Float64 = v1.val.Int64 - v2.val.Float64;
         res->type = Float64;
-    }
-
-    if(is_float(v1) && is_int(v2)) {
+    } else if(is_float(v1) && is_int(v2)) {
         res->val.Float64 = v1.val.Float64 - v2.val.Int64;
         res->type = Float64;
-    }
-
-    if(is_float(v1) && is_float(v2)) {
+    } else if(is_float(v1) && is_float(v2)) {
         res->val.Float64 = v1.val.Float64 - v2.val.Float64;
         res->type = Float64;
-    }
-
-    if(is_vector(v1) && is_vector(v2)) {
+    } else if(is_vector(v1) && is_vector(v2)) {
         do_vector_sub(v1, v2, res);
+    } else {
+        error("Ilegal type in sub");
     }
 
 }
@@ -327,25 +358,24 @@ void do_add(Variable v1, Variable v2, Variable *res) {
     if(is_int(v1) && is_int(v2)) {
         res->type = Int64;
         res->val.Int64 = v1.val.Int64 + v2.val.Int64;
-    }
-    
-    if(is_int(v1) && is_float(v2)) {
+        printf("Do_add1 %i %i\n", v1.type, v2.type);
+    } else if(is_int(v1) && is_float(v2)) {
         res->val.Float64 = v1.val.Int64 + v2.val.Float64;
         res->type = Float64;
-    }
-
-    if(is_float(v1) && is_int(v2)) {
+        printf("Do_add2 %i %i\n", v1.type, v2.type);
+    } else if(is_float(v1) && is_int(v2)) {
         res->val.Float64 = v1.val.Float64 + v2.val.Int64;
         res->type = Float64;
-    }
-
-    if(is_float(v1) && is_float(v2)) {
+        printf("Do_add3 %i %i\n", v1.type, v2.type);
+    } else if(is_float(v1) && is_float(v2)) {
         res->val.Float64 = v1.val.Float64 + v2.val.Float64;
         res->type = Float64;
-    }
-
-    if(is_vector(v1) && is_vector(v2)) {
+        printf("Do_add4 %i %i\n", v1.type, v2.type);
+    } else if(is_vector(v1) && is_vector(v2)) {
+        printf("Is vector %i %i\n", v1.type, v2.type);
         do_vector_add(v1, v2, res);
+    } else {
+        error("Ilegal type in add");
     }
 }
 
