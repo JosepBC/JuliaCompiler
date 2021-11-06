@@ -56,5 +56,12 @@ extern void print_node_col(NodeCol *col);
 extern void store_matrix(NodeRow *row, Variable *var);
 extern void print_var(char* str, Variable var);
 extern bool is_int_or_float(Variable v1, Variable v2);
+extern bool is_int(Variable v);
+extern bool is_float(Variable v);
+extern bool is_matrix(Variable v1, Variable v2);
+extern bool is_vector(Variable v1, Variable v2);
+extern bool is_string(Variable v1, Variable v2);
+extern bool ret_float_or_int(Variable v1, Variable v2);
+extern char* concat_string(Variable v1, Variable v2);
 
 #endif

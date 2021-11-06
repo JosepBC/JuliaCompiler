@@ -134,8 +134,13 @@ mult_list : mult_list ARITHMETIC_MULT pow_list {
     if(DEBUG) printf("mult\n");
 } | mult_list ARITHMETIC_DIV pow_list {
     if(DEBUG) printf("div\n");
+    $$.type = ret_float_or_int($1, $3) ? Float64 : Int64;
+    
+
 } | mult_list ARITHMETIC_MOD pow_list {
     if(DEBUG) printf("mod\n");
+    $$.type = Int64;
+    $$.val.Int64 = $1.val.Int64 % $3.val.Int64;
 } | pow_list { 
     $$ = $1;
 }
@@ -143,6 +148,14 @@ mult_list : mult_list ARITHMETIC_MULT pow_list {
 
 pow_list : pow_list ARITHMETIC_POW value {
     if(DEBUG) printf("Pow list\n");
+    if(is_int($1) && is_int($3)) {
+        $$.type = Int64;
+        $$.val.Int64 = pow($1.val.Int64, $3.val.Int64);
+    } 
+    else {
+        $$.type = Float64; 
+        $$.val.Float64 = pow($1.val.Float64, $3.val.Float64);
+    }
 } | value {
     if(DEBUG) printf("expression\n");
     $$ = $1;

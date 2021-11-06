@@ -28,6 +28,26 @@ bool is_matrix(Variable v1, Variable v2) {
     return (v1.type == Int64Matrix || v2.type == Float64Matrix) && (v1.type == Float64Matrix || v2.type == Int64Matrix);
 }
 
+bool is_vector(Variable v1, Variable v2) {
+    return (v1.type == Int64Vector || v2.type == Float64Vector) && (v1.type == Float64Vector || v2.type == Int64Vector);
+}
+
+bool is_string(Variable v1, Variable v2) {
+    return v1.type == String && v2.type == String;
+}
+//Return 1 = Float, return 0 = int
+bool ret_float_or_int(Variable v1, Variable v2) {
+    return v1.val.Int64 % v2.val.Int64;
+}
+
+char* concat_string(Variable v1, Variable v2) {
+    int size1 = strlen(v1.val.String);
+    int size2 = strlen(v2.val.String);
+    char *res = malloc(size1 + size2 + 1);
+    strcat(strcpy(buffer, v1.val.String), v2.val.String);
+    return res;
+}
+
 void symtab_error_handle(const char *str, int error_code) {
     switch (error_code) {
         case SYMTAB_OK:
