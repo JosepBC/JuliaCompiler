@@ -42,6 +42,12 @@
 %token BOOL_LOWER_THAN
 %token BOOL_HIGHER_THAN
 %token BOOL_DIFF
+%token ARITHMETIC_POW
+%token ARITHMETIC_MOD
+%token ARITHMETIC_DIV
+%token ARITHMETIC_MULT
+%token ARITHMETIC_SUB
+%token ARITHMETIC_ADD
 
 %type<var> int_expression;
 %type<var> float_expression;
@@ -113,6 +119,10 @@ float_expression : FLOAT {
 string_expression : STRING {
     $$ = $1;
 };
+
+aritmetic_expression : 
+
+pow : 
 
 boolean_expression : or_list {
     $$ = $1;

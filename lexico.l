@@ -32,7 +32,37 @@ lower_equal             <=
 higher_equal            >=
 eq                      ==
 diff                    !=
+pow                     ^
+mod                     %
+div                     /
+mult                    *
+sub                     -
+add                     +
 %%
+
+{pow} {
+    return ARITHMETIC_POW;
+}
+
+{mod} {
+    return ARITHMETIC_MOD;
+}
+
+{div} {
+    return ARITHMETIC_DIV;
+}
+
+{mult} {
+    return ARITHMETIC_MULT;
+}
+
+{sub} {
+    return ARITHMETIC_SUB;
+}
+
+{add} {
+    return ARITHMETIC_ADD;
+}
 
 {eq} {
     if(DEBUG) printf("[FLEX debug] bool equals\n");
