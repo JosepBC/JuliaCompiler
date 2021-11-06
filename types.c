@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <math.h>
 
 #include "types.h"
 #include "symtab.h"
@@ -11,9 +12,16 @@ void error(char *str) {
     exit(1);
 }
 
-bool is_int_or_float(Variable v1, Variable v2) {
-    return is_int(v1) && is_int(v2) || is_float(v1) && is_float(v2) ||
-    (is_int(v1) || is_int(v2)) && (is_float(v1) || is_float(v2));
+bool is_int_vector(Variable v) {return v.type == Int64Vector;}
+
+bool is_float_vector(Variable v) {return v.type == Float64Vector;}
+
+bool is_int_matrix(Variable v) {return v.type == Int64Matrix;}
+
+bool is_float_matrix(Variable v) {return v.type == Float64Matrix;}
+
+bool is_int_or_float(Variable v1) {
+    return is_int(v1) || is_float(v1);
 }
 
 bool is_int(Variable v) {
@@ -24,28 +32,273 @@ bool is_float(Variable v) {
     return v.type == Float64;
 }
 
-bool is_matrix(Variable v1, Variable v2) {
-    return (v1.type == Int64Matrix || v2.type == Float64Matrix) && (v1.type == Float64Matrix || v2.type == Int64Matrix);
+bool is_matrix(Variable v) {
+    return v.type == Int64Matrix || v.type == Float64Matrix;
 }
 
-bool is_vector(Variable v1, Variable v2) {
-    return (v1.type == Int64Vector || v2.type == Float64Vector) && (v1.type == Float64Vector || v2.type == Int64Vector);
+bool is_vector(Variable v) {
+    return is_int_vector(v) || is_float_vector(v);
 }
 
-bool is_string(Variable v1, Variable v2) {
-    return v1.type == String && v2.type == String;
+void do_pow(Variable v1, Variable v2, Variable *res) {
+    if(is_int(v1) && is_int(v2)) {
+        res->type = Int64;
+        res->val.Int64 = pow(v1.val.Int64, v2.val.Int64);
+        return;
+    }
+
+    res->type = Float64;
+
+    if(is_int(v1) && is_float(v2)) {
+        res->val.Float64 = pow(v1.val.Int64, v2.val.Float64);
+    }
+
+    if(is_float(v1) && is_int(v2)) {
+        res->val.Float64 = pow(v1.val.Float64, v2.val.Int64);
+    }
+
+    if(is_float(v1) && is_float(v2)) {
+        res->val.Float64 = pow(v1.val.Float64, v2.val.Float64);
+    }
+
 }
-//Return 1 = Float, return 0 = int
-bool ret_float_or_int(Variable v1, Variable v2) {
-    return v1.val.Int64 % v2.val.Int64;
+
+void do_div(Variable v1, Variable v2, Variable *res) {
+    if(is_int(v1) && is_int(v2)) {
+        res->type = Int64;
+        res->val.Int64 = v1.val.Int64 / v2.val.Int64;
+        return;
+    } 
+    
+    res->type = Float64;
+    
+    if(is_int(v1) && is_float(v2)) {
+        res->val.Float64 = v1.val.Int64 / v2.val.Float64;
+    }
+
+    if(is_float(v1) && is_int(v2)) {
+        res->val.Float64 = v1.val.Float64 / v2.val.Int64;
+    }
+
+    if(is_float(v1) && is_float(v2)) {
+        res->val.Float64 = v1.val.Float64 / v2.val.Float64;
+    }
+
+}
+
+void do_mult(Variable v1, Variable v2, Variable *res) {
+    if(is_int(v1) && is_int(v2)) {
+        res->type = Int64;
+        res->val.Int64 = v1.val.Int64 * v2.val.Int64;
+    } 
+    
+    if(is_string(v1) && is_string(v2)) {
+        res->type = String;
+        res->val.String = concat_string(v1, v2);
+    }
+    
+    if(is_int(v1) && is_float(v2)) {
+        res->val.Float64 = v1.val.Int64 * v2.val.Float64;
+        res->type = Float64;
+    }
+
+    if(is_float(v1) && is_int(v2)) {
+        res->val.Float64 = v1.val.Float64 * v2.val.Int64;
+        res->type = Float64;
+    }
+
+    if(is_float(v1) && is_float(v2)) {
+        res->val.Float64 = v1.val.Float64 * v2.val.Float64;
+        res->type = Float64;
+    }
+
+}
+
+
+void add_int_vector(Variable v1, Variable v2, Variable *res) {
+    for(int i = 0; i < v1.val.Int64Vector.n_elem; i++) {
+        res->val.Int64Vector.v[i] = v1.val.Int64Vector.v[i] + v2.val.Int64Vector.v[i];
+    }
+}
+
+void add_float_vector(Variable v1, Variable v2, Variable *res) {
+    for(int i = 0; i < v1.val.Float64Vector.n_elem; i++) {
+        res->val.Float64Vector.v[i] = v1.val.Float64Vector.v[i] + v2.val.Float64Vector.v[i];
+    }
+}
+
+void add_int_float_vector(Variable v1, Variable v2, Variable *res) {
+    for(int i = 0; i < v1.val.Int64Vector.n_elem; i++) {
+        res->val.Float64Vector.v[i] = v1.val.Int64Vector.v[i] + v2.val.Float64Vector.v[i];
+    }
+}
+
+void sub_int_vector(Variable v1, Variable v2, Variable *res) {
+    for(int i = 0; i < v1.val.Int64Vector.n_elem; i++) {
+        res->val.Int64Vector.v[i] = v1.val.Int64Vector.v[i] - v2.val.Int64Vector.v[i];
+    }
+}
+
+void sub_float_vector(Variable v1, Variable v2, Variable *res) {
+    for(int i = 0; i < v1.val.Float64Vector.n_elem; i++) {
+        res->val.Float64Vector.v[i] = v1.val.Float64Vector.v[i] - v2.val.Float64Vector.v[i];
+    }
+}
+
+void sub_int_float_vector(Variable v1, Variable v2, Variable *res) {
+    for(int i = 0; i < v1.val.Int64Vector.n_elem; i++) {
+        res->val.Float64Vector.v[i] = v1.val.Int64Vector.v[i] - v2.val.Float64Vector.v[i];
+    }
+}
+
+void do_vector_add(Variable v1, Variable v2, Variable *res) {
+    if(is_int(v1) && is_int(v2)) {
+        if(v1.val.Int64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
+        
+        res->type = Int64Vector;
+        res->val.Int64Vector.v = (int *)malloc(sizeof(int) * v1.val.Int64Vector.n_elem);
+        res->val.Int64Vector.n_elem = v1.val.Int64Vector.n_elem;
+        
+        add_int_vector(v1, v2, res);
+    }
+    
+    if(is_int(v1) && is_float(v2)) {
+        if(v1.val.Int64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
+        
+        res->type = Float64Vector;
+        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Int64Vector.n_elem);
+        res->val.Float64Vector.n_elem = v1.val.Int64Vector.n_elem;
+        
+        add_int_float_vector(v1, v2, res);
+    }
+
+    if(is_float(v1) && is_int(v2)) {
+        if(v1.val.Float64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
+        
+        res->type = Float64Vector;
+        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Float64Vector.n_elem);
+        res->val.Int64Vector.n_elem = v1.val.Float64Vector.n_elem;
+        
+        add_int_float_vector(v2, v1, res);
+    }
+
+    if(is_float(v1) && is_float(v2)) {
+        if(v1.val.Float64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
+        
+        res->type = Float64Vector;
+        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Float64Vector.n_elem);
+        res->val.Float64Vector.n_elem = v1.val.Float64Vector.n_elem;
+        
+        add_int_float_vector(v1, v2, res);
+    }
+}
+
+void do_vector_sub(Variable v1, Variable v2, Variable *res) {
+    if(is_int(v1) && is_int(v2)) {
+        if(v1.val.Int64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
+        
+        res->type = Int64Vector;
+        res->val.Int64Vector.v = (int *)malloc(sizeof(int) * v1.val.Int64Vector.n_elem);
+        res->val.Int64Vector.n_elem = v1.val.Int64Vector.n_elem;
+        
+        sub_int_vector(v1, v2, res);
+    }
+    
+    if(is_int(v1) && is_float(v2)) {
+        if(v1.val.Int64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
+        
+        res->type = Float64Vector;
+        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Int64Vector.n_elem);
+        res->val.Float64Vector.n_elem = v1.val.Int64Vector.n_elem;
+        
+        sub_int_float_vector(v1, v2, res);
+    }
+
+    if(is_float(v1) && is_int(v2)) {
+        if(v1.val.Float64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
+        
+        res->type = Float64Vector;
+        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Float64Vector.n_elem);
+        res->val.Int64Vector.n_elem = v1.val.Float64Vector.n_elem;
+        
+        sub_int_float_vector(v2, v1, res);
+    }
+
+    if(is_float(v1) && is_float(v2)) {
+        if(v1.val.Float64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
+        
+        res->type = Float64Vector;
+        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Float64Vector.n_elem);
+        res->val.Float64Vector.n_elem = v1.val.Float64Vector.n_elem;
+        
+        sub_int_float_vector(v1, v2, res);
+    }
+}
+
+void do_sub(Variable v1, Variable v2, Variable *res) {
+    if(is_int(v1) && is_int(v2)) {
+        res->type = Int64;
+        res->val.Int64 = v1.val.Int64 - v2.val.Int64;
+    }
+    
+    if(is_int(v1) && is_float(v2)) {
+        res->val.Float64 = v1.val.Int64 - v2.val.Float64;
+        res->type = Float64;
+    }
+
+    if(is_float(v1) && is_int(v2)) {
+        res->val.Float64 = v1.val.Float64 - v2.val.Int64;
+        res->type = Float64;
+    }
+
+    if(is_float(v1) && is_float(v2)) {
+        res->val.Float64 = v1.val.Float64 - v2.val.Float64;
+        res->type = Float64;
+    }
+
+    if(is_vector(v1) && is_vector(v2)) {
+        do_vector_sub(v1, v2, res);
+    }
+
+}
+
+void do_add(Variable v1, Variable v2, Variable *res) {
+    if(is_int(v1) && is_int(v2)) {
+        res->type = Int64;
+        res->val.Int64 = v1.val.Int64 + v2.val.Int64;
+    }
+    
+    if(is_int(v1) && is_float(v2)) {
+        res->val.Float64 = v1.val.Int64 + v2.val.Float64;
+        res->type = Float64;
+    }
+
+    if(is_float(v1) && is_int(v2)) {
+        res->val.Float64 = v1.val.Float64 + v2.val.Int64;
+        res->type = Float64;
+    }
+
+    if(is_float(v1) && is_float(v2)) {
+        res->val.Float64 = v1.val.Float64 + v2.val.Float64;
+        res->type = Float64;
+    }
+
+    if(is_vector(v1) && is_vector(v2)) {
+        do_vector_add(v1, v2, res);
+    }
+}
+
+bool is_string(Variable v1) {
+    return v1.type == String;
 }
 
 char* concat_string(Variable v1, Variable v2) {
-    int size1 = strlen(v1.val.String);
-    int size2 = strlen(v2.val.String);
-    char *res = malloc(size1 + size2 + 1);
-    strcat(strcpy(buffer, v1.val.String), v2.val.String);
-    return res;
+    int size_v1 = strlen(v1.val.String);
+    int size_v2 = strlen(v2.val.String);
+    char *concated = malloc(size_v1 + size_v2 + 1);
+    strcpy(concated, v1.val.String);
+    strcat(concated, v2.val.String);
+    return concated;
 }
 
 void symtab_error_handle(const char *str, int error_code) {

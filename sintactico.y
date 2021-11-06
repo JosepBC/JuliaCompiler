@@ -48,6 +48,7 @@
 %token ARITHMETIC_MULT
 %token ARITHMETIC_SUB
 %token ARITHMETIC_ADD
+%token COMMA
 
 %type<var> int_expression;
 %type<var> float_expression;
@@ -125,20 +126,29 @@ expression : add_list {$$ = $1;}
 
 add_list : add_list ARITHMETIC_ADD mult_list {
     if(DEBUG) printf("add\n");
+
+    do_add($1, $3, &$$);
 } | add_list ARITHMETIC_SUB mult_list {
     if(DEBUG) printf("sub\n");
+
+    do_sub($1, $3, &$$);
 } | mult_list {$$ = $1;}
 
 
 mult_list : mult_list ARITHMETIC_MULT pow_list {
     if(DEBUG) printf("mult\n");
+
+    do_mult($1, $3, &$$);
+
 } | mult_list ARITHMETIC_DIV pow_list {
     if(DEBUG) printf("div\n");
-    $$.type = ret_float_or_int($1, $3) ? Float64 : Int64;
-    
 
+    do_div($1, $3, &$$);
 } | mult_list ARITHMETIC_MOD pow_list {
     if(DEBUG) printf("mod\n");
+
+    if(!is_int($1) || !is_int($3)) yyerror("Ilegal type in mod!");
+
     $$.type = Int64;
     $$.val.Int64 = $1.val.Int64 % $3.val.Int64;
 } | pow_list { 
@@ -148,14 +158,9 @@ mult_list : mult_list ARITHMETIC_MULT pow_list {
 
 pow_list : pow_list ARITHMETIC_POW value {
     if(DEBUG) printf("Pow list\n");
-    if(is_int($1) && is_int($3)) {
-        $$.type = Int64;
-        $$.val.Int64 = pow($1.val.Int64, $3.val.Int64);
-    } 
-    else {
-        $$.type = Float64; 
-        $$.val.Float64 = pow($1.val.Float64, $3.val.Float64);
-    }
+    if(!is_int_or_float($1) || !is_int_or_float($3)) yyerror("Ilegal type in pow!");
+
+    do_pow($1, $3, &$$);
 } | value {
     if(DEBUG) printf("expression\n");
     $$ = $1;
