@@ -86,6 +86,66 @@ void do_div(Variable v1, Variable v2, Variable *res) {
 
 }
 
+void mult_int_vector(Variable v1, Variable v2, Variable *res) {
+    for(int i = 0; i < v1.val.Int64Vector.n_elem; i++) {
+        res->val.Int64Vector.v[i] = v1.val.Int64Vector.v[i] * v2.val.Int64Vector.v[i];
+    }
+}
+
+void mult_float_vector(Variable v1, Variable v2, Variable *res) {
+    for(int i = 0; i < v1.val.Float64Vector.n_elem; i++) {
+        res->val.Float64Vector.v[i] = v1.val.Float64Vector.v[i] * v2.val.Float64Vector.v[i];
+    }
+}
+
+void mult_int_float_vector(Variable v1, Variable v2, Variable *res) {
+    for(int i = 0; i < v1.val.Int64Vector.n_elem; i++) {
+        res->val.Float64Vector.v[i] = v1.val.Int64Vector.v[i] * v2.val.Float64Vector.v[i];
+    }
+}
+
+void do_vector_mult(Variable v1, Variable v2, Variable *res) {
+    if(is_int_vector(v1) && is_int_vector(v2)) {
+        if(v1.val.Int64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
+        
+        res->type = Int64Vector;
+        res->val.Int64Vector.v = (int *)malloc(sizeof(int) * v1.val.Int64Vector.n_elem);
+        res->val.Int64Vector.n_elem = v1.val.Int64Vector.n_elem;
+        
+        mult_int_vector(v1, v2, res);
+    }
+    
+    if(is_int_vector(v1) && is_float_vector(v2)) {
+        if(v1.val.Int64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
+        
+        res->type = Float64Vector;
+        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Int64Vector.n_elem);
+        res->val.Float64Vector.n_elem = v1.val.Int64Vector.n_elem;
+        
+        mult_int_float_vector(v1, v2, res);
+    }
+
+    if(is_float_vector(v1) && is_int_vector(v2)) {
+        if(v1.val.Float64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
+        
+        res->type = Float64Vector;
+        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Float64Vector.n_elem);
+        res->val.Int64Vector.n_elem = v1.val.Float64Vector.n_elem;
+        
+        mult_int_float_vector(v2, v1, res);
+    }
+
+    if(is_float_vector(v1) && is_float_vector(v2)) {
+        if(v1.val.Float64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
+        
+        res->type = Float64Vector;
+        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Float64Vector.n_elem);
+        res->val.Float64Vector.n_elem = v1.val.Float64Vector.n_elem;
+        
+        mult_float_vector(v1, v2, res);
+    }
+}
+
 void do_mult(Variable v1, Variable v2, Variable *res) {
     if(is_int(v1) && is_int(v2)) {
         res->type = Int64;
@@ -111,6 +171,8 @@ void do_mult(Variable v1, Variable v2, Variable *res) {
         res->val.Float64 = v1.val.Float64 * v2.val.Float64;
         res->type = Float64;
     }
+
+    if(is_vector(v1) && is_vector(v2)) do_vector_mult(v1, v2, res);
 
 }
 
