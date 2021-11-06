@@ -64,9 +64,13 @@
 %type<var> or_list;
 %type<var> not;
 %type<var> bool_equals_list;
+%type<var> pow_list;
+%type<var> mult_list;
+%type<var> add_list;
+%type<var> value;
 
 %%
-prog : sentence_list ;
+prog : sentence_list;
 sentence_list : sentence_list sentence ENTER | sentence ENTER;
 sentence : assignation_sentence | expression;
 assignation_sentence : ID EQUALS expression {
@@ -104,9 +108,6 @@ assignation_sentence : ID EQUALS expression {
     store_val(v);
 };
 
-expression : int_expression {$$ = $1;} | float_expression {$$ = $1;} | 
-            string_expression {$$ = $1;} | boolean_expression {$$ = $1;} | 
-            id_expression {show_val($1);} | m {$$ = $1;};
 
 int_expression : INT {
     $$ = $1;
@@ -120,9 +121,37 @@ string_expression : STRING {
     $$ = $1;
 };
 
-aritmetic_expression : 
+expression : add_list {$$ = $1;}
 
-pow : 
+add_list : add_list ARITHMETIC_ADD mult_list {
+    if(DEBUG) printf("add\n");
+} | add_list ARITHMETIC_SUB mult_list {
+    if(DEBUG) printf("sub\n");
+} | mult_list {$$ = $1;}
+
+
+mult_list : mult_list ARITHMETIC_MULT pow_list {
+    if(DEBUG) printf("mult\n");
+} | mult_list ARITHMETIC_DIV pow_list {
+    if(DEBUG) printf("div\n");
+} | mult_list ARITHMETIC_MOD pow_list {
+    if(DEBUG) printf("mod\n");
+} | pow_list { 
+    $$ = $1;
+}
+
+
+pow_list : pow_list ARITHMETIC_POW value {
+    if(DEBUG) printf("Pow list\n");
+} | value {
+    if(DEBUG) printf("expression\n");
+    $$ = $1;
+}
+
+value : int_expression {$$ = $1;} | float_expression {$$ = $1;} | 
+            string_expression {$$ = $1;} | boolean_expression {$$ = $1;} | 
+            id_expression {show_val($1);} | m {$$ = $1;};
+
 
 boolean_expression : or_list {
     $$ = $1;

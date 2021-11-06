@@ -55,5 +55,6 @@ extern void print_node_row(NodeRow *row);
 extern void print_node_col(NodeCol *col);
 extern void store_matrix(NodeRow *row, Variable *var);
 extern void print_var(char* str, Variable var);
+extern bool is_int_or_float(Variable v1, Variable v2);
 
 #endif

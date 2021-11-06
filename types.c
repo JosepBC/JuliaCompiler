@@ -1,12 +1,31 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
+
 #include "types.h"
 #include "symtab.h"
 
 void error(char *str) {
     printf("%s\n", str);
     exit(1);
+}
+
+bool is_int_or_float(Variable v1, Variable v2) {
+    return is_int(v1) && is_int(v2) || is_float(v1) && is_float(v2) ||
+    (is_int(v1) || is_int(v2)) && (is_float(v1) || is_float(v2));
+}
+
+bool is_int(Variable v) {
+    return v.type == Int64;
+}
+
+bool is_float(Variable v) {
+    return v.type == Float64;
+}
+
+bool is_matrix(Variable v1, Variable v2) {
+    return (v1.type == Int64Matrix || v2.type == Float64Matrix) && (v1.type == Float64Matrix || v2.type == Int64Matrix);
 }
 
 void symtab_error_handle(const char *str, int error_code) {

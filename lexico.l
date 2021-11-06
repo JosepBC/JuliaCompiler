@@ -32,35 +32,41 @@ lower_equal             <=
 higher_equal            >=
 eq                      ==
 diff                    !=
-pow                     ^
+pow                     \^
 mod                     %
-div                     /
-mult                    *
+div                     \/
+mult                    \*
 sub                     -
-add                     +
+add                     \+
 %%
 
 {pow} {
+    if(DEBUG) printf("[FLEX debug] pow\n");
     return ARITHMETIC_POW;
 }
 
 {mod} {
+    if(DEBUG) printf("[FLEX debug] mod\n");
     return ARITHMETIC_MOD;
 }
 
 {div} {
+    if(DEBUG) printf("[FLEX debug] div\n");
     return ARITHMETIC_DIV;
 }
 
 {mult} {
+    if(DEBUG) printf("[FLEX debug] mult\n");
     return ARITHMETIC_MULT;
 }
 
 {sub} {
+    if(DEBUG) printf("[FLEX debug] sub\n");
     return ARITHMETIC_SUB;
 }
 
 {add} {
+    if(DEBUG) printf("[FLEX debug] add\n");
     return ARITHMETIC_ADD;
 }
 
