@@ -136,7 +136,7 @@ close_p                 \)
 {string} {
     if(DEBUG) printf("[FLEX Debug] String %s\n", yytext); 
     crop_first_last_elem(&yytext);
-    yylval.var.val.String = yytext;  
+    yylval.var.val.String = strdup(yytext);
     yylval.var.type = String; 
     return STRING;
 }
