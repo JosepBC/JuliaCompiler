@@ -154,6 +154,7 @@ comma                   ,
 
 {i} {
     if(DEBUG) printf("[FLEX Debug] Int64 %s\n", yytext);
+    yylval.var.var_name = "";
     yylval.var.val.Int64 = atoi(yytext);
     yylval.var.type = Int64;
     return INT;
