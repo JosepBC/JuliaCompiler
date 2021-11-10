@@ -1,6 +1,6 @@
 #ifndef TYPES_HEADER
 #define TYPES_HEADER
-#define DEBUG 1
+#define DEBUG 0
 #include <stdbool.h>
 #include <stdio.h>
 

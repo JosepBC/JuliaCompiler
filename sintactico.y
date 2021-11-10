@@ -310,11 +310,11 @@ int yyerror(const char *s) {
 }
 
 int main(int argc, char **argv) {
-    /* yyin = fopen(argv[1], "r"); */
-    out = fopen(argv[1], "w");
+    yyin = fopen(argv[1], "r");
+    out = fopen(argv[2], "w");
     yyparse();
 
     fclose(out);
-    /* fclose(yyin); */
+    fclose(yyin);
     return 1;
 }
