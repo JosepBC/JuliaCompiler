@@ -18,8 +18,8 @@ b                       (true|false)
 id                      {letter}+(_?{letterDigit}+)*
 space                   " "
 bad_id                  {letterDigit}+(_?{letterDigit}+)*
-comment                 #.*\n?
-multi_line_comment      #=({letterDigit}*|\n)*=#\n?
+comment                 #.*
+multi_line_comment      "#="[^=]*"="+([^=#]*"="*"="+)*"#"
 open_m                  \[
 close_m                 \]
 semicolon               ;
@@ -178,7 +178,12 @@ comma                   ,
     if(DEBUG) printf("[FLEX Debug] Semicolon\n");
     return SEMICOLON;
 }
-{space}|{comment}|{multi_line_comment} {if(DEBUG) printf("[FLEX Debug] Comment, multiline comment, space\n");}
+
+{space}|{multi_line_comment} {if(DEBUG) printf("[FLEX Debug] Multiline comment, space\n");}
+
+{comment} {
+    if(DEBUG) printf("Comment\n");
+}
 
 {enter} {return ENTER;}
 
