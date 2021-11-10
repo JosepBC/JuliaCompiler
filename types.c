@@ -12,6 +12,7 @@ void error(char *str) {
     exit(1);
 }
 
+
 bool is_int_vector(Variable v) {return v.type == Int64Vector;}
 
 bool is_float_vector(Variable v) {return v.type == Float64Vector;}
@@ -38,6 +39,130 @@ bool is_matrix(Variable v) {
 
 bool is_vector(Variable v) {
     return is_int_vector(v) || is_float_vector(v);
+}
+
+bool is_bool(Variable v) {
+    return v.type == Bool;
+}
+
+void do_bool_equals(Variable a, Variable b, Variable *dst) {
+    dst->type = Bool;
+    if(is_bool(a) && is_bool(b)) {
+        dst->val.Bool = a.val.Bool == b.val.Bool;
+    } else if(is_int(a) && is_int(b)) {
+        dst->val.Bool = a.val.Int64 == b.val.Int64;
+    } else if(is_int(a) && is_float(b)) {
+        dst->val.Bool = (float)a.val.Int64 == b.val.Float64;
+    } else if(is_float(a) && is_int(b)) {
+        dst->val.Bool = a.val.Float64 == (float)b.val.Int64;
+    } else if(is_float(a) && is_float(b)) {
+        dst->val.Bool = a.val.Float64 == b.val.Float64;
+    } else {
+        error("Ilegal type in bool equals");
+    }
+}
+
+void do_bool_and(Variable a, Variable b, Variable *dst) {
+    if(!is_bool(a) || !is_bool(b)) error("Ilegal type in and");
+    dst->type = Bool;
+    dst->val.Bool = a.val.Bool && b.val.Bool;
+}
+
+void do_bool_or(Variable a, Variable b, Variable *dst) {
+    if(!is_bool(a) || !is_bool(b)) error("Ilegal type in and");
+    dst->type = Bool;
+    dst->val.Bool = a.val.Bool || b.val.Bool;
+}
+
+void do_bool_not(Variable a, Variable *dst) {
+    if(!is_bool(a)) error("Ilegal type in and");
+    dst->type = Bool;
+    dst->val.Bool = !a.val.Bool;
+}
+
+void do_bool_diff(Variable a, Variable b, Variable *dst) {
+    dst->type = Bool;
+    if(is_bool(a) && is_bool(b)) {
+        dst->val.Bool = a.val.Bool != b.val.Bool;
+    } else if(is_int(a) && is_int(b)) {
+        dst->val.Bool = a.val.Int64 != b.val.Int64;
+    } else if(is_int(a) && is_float(b)) {
+        dst->val.Bool = (float)a.val.Int64 != b.val.Float64;
+    } else if(is_float(a) && is_int(b)) {
+        dst->val.Bool = a.val.Float64 != (float)b.val.Int64;
+    } else if(is_float(a) && is_float(b)) {
+        dst->val.Bool = a.val.Float64 != b.val.Float64;
+    } else {
+        error("Ilegal type in bool diff");
+    }
+}
+
+void do_bool_higher_than(Variable a, Variable b, Variable *dst) {
+    dst->type = Bool;
+    if(is_bool(a) && is_bool(b)) {
+        dst->val.Bool = a.val.Bool > b.val.Bool;
+    } else if(is_int(a) && is_int(b)) {
+        dst->val.Bool = a.val.Int64 > b.val.Int64;
+    } else if(is_int(a) && is_float(b)) {
+        dst->val.Bool = (float)a.val.Int64 > b.val.Float64;
+    } else if(is_float(a) && is_int(b)) {
+        dst->val.Bool = a.val.Float64 > (float)b.val.Int64;
+    } else if(is_float(a) && is_float(b)) {
+        dst->val.Bool = a.val.Float64 > b.val.Float64;
+    } else {
+        error("Ilegal type in bool higher than");
+    }
+}
+
+void do_bool_lower_than(Variable a, Variable b, Variable *dst) {
+    dst->type = Bool;
+    if(is_bool(a) && is_bool(b)) {
+        dst->val.Bool = a.val.Bool < b.val.Bool;
+    } else if(is_int(a) && is_int(b)) {
+        dst->val.Bool = a.val.Int64 < b.val.Int64;
+    } else if(is_int(a) && is_float(b)) {
+        dst->val.Bool = (float)a.val.Int64 < b.val.Float64;
+    } else if(is_float(a) && is_int(b)) {
+        dst->val.Bool = a.val.Float64 < (float)b.val.Int64;
+    } else if(is_float(a) && is_float(b)) {
+        dst->val.Bool = a.val.Float64 < b.val.Float64;
+    } else {
+        error("Ilegal type in bool lower_than");
+    }
+}
+
+void do_bool_higher_equal(Variable a, Variable b, Variable *dst) {
+    dst->type = Bool;
+    if(is_bool(a) && is_bool(b)) {
+        dst->val.Bool = a.val.Bool >= b.val.Bool;
+    } else if(is_int(a) && is_int(b)) {
+        dst->val.Bool = a.val.Int64 >= b.val.Int64;
+    } else if(is_int(a) && is_float(b)) {
+        dst->val.Bool = (float)a.val.Int64 >= b.val.Float64;
+    } else if(is_float(a) && is_int(b)) {
+        dst->val.Bool = a.val.Float64 >= (float)b.val.Int64;
+    } else if(is_float(a) && is_float(b)) {
+        dst->val.Bool = a.val.Float64 >= b.val.Float64;
+    } else {
+        error("Ilegal type in bool higher equal");
+    }
+}
+
+void do_bool_lower_equal(Variable a, Variable b, Variable *dst) {
+    dst->type = Bool;
+    if(is_bool(a) && is_bool(b)) {
+        dst->val.Bool = a.val.Bool <= b.val.Bool;
+    } else if(is_int(a) && is_int(b)) {
+        dst->val.Bool = a.val.Int64 <= b.val.Int64;
+    } else if(is_int(a) && is_float(b)) {
+        dst->val.Bool = (float)a.val.Int64 <= b.val.Float64;
+    } else if(is_float(a) && is_int(b)) {
+        dst->val.Bool = a.val.Float64 <= (float)b.val.Int64;
+    } else if(is_float(a) && is_float(b)) {
+        dst->val.Bool = a.val.Float64 <= b.val.Float64;
+    } else {
+        error("Ilegal type in bool lower equal");
+    }
 }
 
 void do_pow(Variable v1, Variable v2, Variable *res) {

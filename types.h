@@ -75,5 +75,15 @@ extern void get_vector_elem(char *vector_name, int idx, Variable *dst);
 extern void get_matrix_elem(char *matrix_name, int row, int col, Variable *dst);
 extern void get_id_vector_elem(char *vector_name, char *vector_idx_name, Variable *res);
 extern void get_id_matrix_elem(char *matrix_name, char *row_idx_name, char *col_idx_name, Variable *dst);
+extern void do_bool_equals(Variable a, Variable b, Variable *dst);
+extern void do_bool_and(Variable a, Variable b, Variable *dst);
+extern void do_bool_or(Variable a, Variable b, Variable *dst);
+extern void do_bool_not(Variable a, Variable *dst);
+extern void do_bool_diff(Variable a, Variable b, Variable *dst);
 
+
+extern void do_bool_higher_than(Variable a, Variable b, Variable *dst);
+extern void do_bool_lower_than(Variable a, Variable b, Variable *dst);
+extern void do_bool_higher_equal(Variable a, Variable b, Variable *dst);
+extern void do_bool_lower_equal(Variable a, Variable b, Variable *dst);
 #endif
