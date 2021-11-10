@@ -82,8 +82,8 @@
 
 %%
 prog : sentence_list;
-sentence_list : sentence_list sentence ENTER | sentence ENTER;
-sentence : assignation_sentence | expression {print_var("Expression", $1);};
+sentence_list : sentence_list sentence ENTER | sentence_list ENTER | %empty;
+sentence : assignation_sentence | expression {print_var("Expression", $1, out);};
 assignation_sentence : ID EQUALS expression {
     Variable v;
     v.var_name = $1.var_name;
