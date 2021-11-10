@@ -12,6 +12,7 @@
 
     int yylex();
     extern FILE* yyin;
+    FILE* out;
     int yyerror(const char *s);
 %}
 
@@ -115,7 +116,7 @@ assignation_sentence : ID EQUALS expression {
         default:
             yyerror("Unknown type\n");
     }
-    store_val(v);
+    store_val(v, out);
 };
 
 
@@ -257,7 +258,7 @@ id_expression : ID {
 m : OPEN_M row_list CLOSE_M {
     if(DEBUG) print_node_row($2);
     store_matrix($2, &$$);
-    if(DEBUG) print_var("matrix declaration", $$);
+    // if(DEBUG) print_var("matrix declaration", $$);
 };
 
 row_list : row SEMICOLON row_list {
@@ -309,7 +310,11 @@ int yyerror(const char *s) {
 }
 
 int main(int argc, char **argv) {
-    //yyin = fopen(argv[1], "r");
+    /* yyin = fopen(argv[1], "r"); */
+    out = fopen(argv[1], "w");
     yyparse();
+
+    fclose(out);
+    /* fclose(yyin); */
     return 1;
 }
