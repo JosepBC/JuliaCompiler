@@ -118,8 +118,31 @@ void print_matrix(Variable v) {
     }
 }
 
+void fprint_matrix(Variable v, FILE *f) {
+    switch (v.type) {
+        case Int64Matrix:
+            for(int i = 0; i < v.val.Int64Matrix.n_rows; i++) {
+                for(int j = 0; j < v.val.Int64Matrix.n_cols; j++){
+                    fprintf(f, "%i ", v.val.Int64Matrix.m[i * v.val.Int64Matrix.n_cols + j]);
+                }
+                fprintf(f, "\n");
+            }
+            break;
+        case Float64Matrix:
+            for(int i = 0; i < v.val.Float64Matrix.n_rows; i++) {
+                for(int j = 0; j < v.val.Float64Matrix.n_cols; j++){
+                    fprintf(f, "%f ", v.val.Float64Matrix.m[i * v.val.Float64Matrix.n_cols + j]);
+                }
+                fprintf(f, "\n");
+            }
+            break;
+        default:
+            error("Ilegal type in print_matrix");
+            break;
+    }
+}
+
 void print_vector(Variable v) {
-    printf("[print_vector types.c] ");
     switch (v.type) {
         case Int64Vector:
             for(int i = 0; i < v.val.Int64Vector.n_elem; i++) printf("%i ", v.val.Int64Vector.v[i]);
@@ -135,43 +158,87 @@ void print_vector(Variable v) {
     }
 }
 
-void print_var(char* str, Variable var) {
+void fprint_vector(Variable v, FILE *out) {
+    switch (v.type) {
+        case Int64Vector:
+            for(int i = 0; i < v.val.Int64Vector.n_elem; i++) fprintf(out, "%i ", v.val.Int64Vector.v[i]);
+            fprintf(out, "\n");
+            break;
+        case Float64Vector:
+            for(int i = 0; i < v.val.Float64Vector.n_elem; i++) fprintf(out, "%f ", v.val.Float64Vector.v[i]);
+            fprintf(out, "\n");
+            break;
+        default:
+            error("Ilegal type in print_vector!");
+            break;
+    }
+}
+
+void print_var(char* str, Variable var, FILE *out) {
         switch (var.type) {
             case Int64:
                 if(DEBUG) printf("[DEBUG %s] Int64 %s = %i\n", str, var.var_name, var.val.Int64);
-                else printf("Int64 %s = %i\n", var.var_name, var.val.Int64);
+                else {
+                    printf("Int64 %s = %i\n", var.var_name, var.val.Int64);
+                    fprintf(out, "Int64 %s = %i\n", var.var_name, var.val.Int64);
+                }
                 break;
             case Float64:
                 if(DEBUG) printf("[DEBUG %s] Float64 %s = %f\n", str, var.var_name, var.val.Float64);
-                else printf("Float64 %s = %f\n", var.var_name, var.val.Float64);
+                else {
+                    printf("Float64 %s = %f\n", var.var_name, var.val.Float64);
+                    fprintf(out, "Float64 %s = %f\n", var.var_name, var.val.Float64);
+                }
                 break;
             case String:
                 if(DEBUG) printf("[DEBUG %s] String %s = %s\n", str, var.var_name, var.val.String);
-                else printf("String %s = %s\n", var.var_name, var.val.String);
+                else {
+                    printf("String %s = %s\n", var.var_name, var.val.String);
+                    fprintf(out, "String %s = %s\n", var.var_name, var.val.String);
+                }
                 break;
             case Bool:
                 if(DEBUG) printf("[DEBUG %s] Bool %s = %i\n", str, var.var_name, var.val.Bool);
-                else printf("Bool %s = %i\n", var.var_name, var.val.Bool);
+                else {
+                    printf("Bool %s = %s\n", var.var_name, var.val.Bool ? "true" : "false");
+                    fprintf(out, "Bool %s = %s\n", var.var_name, var.val.Bool ? "true" : "false");
+                }
                 break;
             case Int64Vector:
                 if(DEBUG) printf("[DEBUG %s] Int64Vector %s = \n", str, var.var_name);
-                else printf("Int64Vector %s = \n", var.var_name);
-                print_vector(var);
+                else {
+                    printf("Int64Vector %s = ", var.var_name);
+                    fprintf(out, "Int64Vector %s = ", var.var_name);
+                    print_vector(var);
+                    fprint_vector(var, out);
+                }
                 break;
             case Float64Vector:
                 if(DEBUG) printf("[DEBUG %s] Float64Vector %s = \n", str, var.var_name);
-                else printf("Float64Vector %s = \n", var.var_name);
-                print_vector(var);
+                else {
+                    printf("Float64Vector %s = ", var.var_name);
+                    fprintf(out, "Float64Vector %s = ", var.var_name);
+                    print_vector(var);
+                    fprint_vector(var, out);
+                }
                 break;
             case Int64Matrix:
                 if(DEBUG) printf("[DEBUG %s] Int64Matrix %s = \n", str, var.var_name);
-                else printf("Int64Matrix %s = \n", var.var_name);
-                print_matrix(var);
+                else {
+                    printf("Int64Matrix %s = \n", var.var_name);
+                    fprintf(out, "Int64Matrix %s = \n", var.var_name);
+                    print_matrix(var);
+                    fprint_matrix(var, out);
+                }
                 break;
             case Float64Matrix:
                 if(DEBUG) printf("[DEBUG %s] Float64Matrix %s = \n", str, var.var_name);
-                else printf("Float64Matrix %s = \n", var.var_name);
-                print_matrix(var);
+                else {
+                    printf("Float64Matrix %s = \n", var.var_name);
+                    fprintf(out, "Float64Matrix %s = \n", var.var_name);
+                    print_matrix(var);
+                    fprint_matrix(var, out);
+                }
                 break;
             default:
                 printf("Unknown type in print_var: %i\n", var.type);
@@ -179,15 +246,14 @@ void print_var(char* str, Variable var) {
         }
 }
 
-
 void crop_first_last_elem(char **str) {
     *str = *str + 1;
     (*str)[strlen(*str) - 1] = '\0';
 }
 
 //-------------Symtab store, get-------------
-void store_val(Variable var) {
-    print_var("store_val", var);
+void store_val(Variable var, FILE *out) {
+    print_var("store_val", var, out);
     int ret = sym_add(var.var_name, &var);
     if(ret == SYMTAB_DUPLICATE) {
         ret = sym_remove(var.var_name);
@@ -202,11 +268,11 @@ void get_val(char *key, Variable *v) {
     if(ret != SYMTAB_OK) symtab_error_handle("loockup in show val!", ret);
 }
 
-void show_val(char *key) {
+void show_val(char *key, FILE *out) {
     Variable v;
     int ret = sym_lookup(key, &v);
     if(ret != SYMTAB_OK) symtab_error_handle("loockup in show val!", ret);
-    print_var("show_val", v);
+    print_var("show_val", v, out);
 }
 
 //-------------Get matrix, vector elems-------------
@@ -223,7 +289,6 @@ void get_matrix_elem(char *matrix_name, int row, int col, Variable *dst) {
     get_val(matrix_name, &m);
     switch (m.type) {
         case Int64Matrix:
-            if(row < 0 || col < 0 || row > m.val.Int64Matrix.n_rows - 1 || col > m.val.Int64Matrix.n_cols - 1) error("Index out of bounds!");
             dst->type = Int64;
             dst->val.Int64 = m.val.Int64Matrix.m[row * m.val.Int64Matrix.n_cols + col];
             break;

@@ -1,7 +1,8 @@
 #ifndef TYPES_HEADER
 #define TYPES_HEADER
-#define DEBUG 0
+#define DEBUG 1
 #include <stdbool.h>
+#include <stdio.h>
 
 typedef enum Type_t {Int64, Float64, String, Bool, Int64Vector, Float64Vector, Int64Matrix, Float64Matrix} Type;
 typedef struct Variable_t {
@@ -59,11 +60,11 @@ extern bool is_string(Variable v);
 extern bool is_bool(Variable v);
 extern void error(char *str);
 
-extern void store_val(Variable var);
+extern void store_val(Variable var, FILE *out);
 extern void crop_first_last_elem(char **str);
 extern void print_node_row(NodeRow *row);
 extern void store_matrix(NodeRow *row, Variable *var);
-extern void print_var(char* str, Variable var);
+extern void print_var(char* str, Variable var, FILE *out);
 
 
 extern void get_val(char *key, Variable *v);
