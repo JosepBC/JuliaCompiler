@@ -7,511 +7,7 @@
 #include "types.h"
 #include "symtab.h"
 
-void error(char *str) {
-    printf("%s\n", str);
-    exit(1);
-}
-
-
-bool is_int_vector(Variable v) {return v.type == Int64Vector;}
-
-bool is_float_vector(Variable v) {return v.type == Float64Vector;}
-
-bool is_int_matrix(Variable v) {return v.type == Int64Matrix;}
-
-bool is_float_matrix(Variable v) {return v.type == Float64Matrix;}
-
-bool is_int_or_float(Variable v1) {
-    return is_int(v1) || is_float(v1);
-}
-
-bool is_int(Variable v) {
-    return v.type == Int64;
-}
-
-bool is_float(Variable v) {
-    return v.type == Float64;
-}
-
-bool is_matrix(Variable v) {
-    return v.type == Int64Matrix || v.type == Float64Matrix;
-}
-
-bool is_vector(Variable v) {
-    return is_int_vector(v) || is_float_vector(v);
-}
-
-bool is_bool(Variable v) {
-    return v.type == Bool;
-}
-
-void do_bool_equals(Variable a, Variable b, Variable *dst) {
-    dst->type = Bool;
-    if(is_bool(a) && is_bool(b)) {
-        dst->val.Bool = a.val.Bool == b.val.Bool;
-    } else if(is_int(a) && is_int(b)) {
-        dst->val.Bool = a.val.Int64 == b.val.Int64;
-    } else if(is_int(a) && is_float(b)) {
-        dst->val.Bool = (float)a.val.Int64 == b.val.Float64;
-    } else if(is_float(a) && is_int(b)) {
-        dst->val.Bool = a.val.Float64 == (float)b.val.Int64;
-    } else if(is_float(a) && is_float(b)) {
-        dst->val.Bool = a.val.Float64 == b.val.Float64;
-    } else {
-        error("Ilegal type in bool equals");
-    }
-}
-
-void do_bool_and(Variable a, Variable b, Variable *dst) {
-    if(!is_bool(a) || !is_bool(b)) error("Ilegal type in and");
-    dst->type = Bool;
-    dst->val.Bool = a.val.Bool && b.val.Bool;
-}
-
-void do_bool_or(Variable a, Variable b, Variable *dst) {
-    if(!is_bool(a) || !is_bool(b)) error("Ilegal type in and");
-    dst->type = Bool;
-    dst->val.Bool = a.val.Bool || b.val.Bool;
-}
-
-void do_bool_not(Variable a, Variable *dst) {
-    if(!is_bool(a)) error("Ilegal type in and");
-    dst->type = Bool;
-    dst->val.Bool = !a.val.Bool;
-}
-
-void do_bool_diff(Variable a, Variable b, Variable *dst) {
-    dst->type = Bool;
-    if(is_bool(a) && is_bool(b)) {
-        dst->val.Bool = a.val.Bool != b.val.Bool;
-    } else if(is_int(a) && is_int(b)) {
-        dst->val.Bool = a.val.Int64 != b.val.Int64;
-    } else if(is_int(a) && is_float(b)) {
-        dst->val.Bool = (float)a.val.Int64 != b.val.Float64;
-    } else if(is_float(a) && is_int(b)) {
-        dst->val.Bool = a.val.Float64 != (float)b.val.Int64;
-    } else if(is_float(a) && is_float(b)) {
-        dst->val.Bool = a.val.Float64 != b.val.Float64;
-    } else {
-        error("Ilegal type in bool diff");
-    }
-}
-
-void do_bool_higher_than(Variable a, Variable b, Variable *dst) {
-    dst->type = Bool;
-    if(is_bool(a) && is_bool(b)) {
-        dst->val.Bool = a.val.Bool > b.val.Bool;
-    } else if(is_int(a) && is_int(b)) {
-        dst->val.Bool = a.val.Int64 > b.val.Int64;
-    } else if(is_int(a) && is_float(b)) {
-        dst->val.Bool = (float)a.val.Int64 > b.val.Float64;
-    } else if(is_float(a) && is_int(b)) {
-        dst->val.Bool = a.val.Float64 > (float)b.val.Int64;
-    } else if(is_float(a) && is_float(b)) {
-        dst->val.Bool = a.val.Float64 > b.val.Float64;
-    } else {
-        error("Ilegal type in bool higher than");
-    }
-}
-
-void do_bool_lower_than(Variable a, Variable b, Variable *dst) {
-    dst->type = Bool;
-    if(is_bool(a) && is_bool(b)) {
-        dst->val.Bool = a.val.Bool < b.val.Bool;
-    } else if(is_int(a) && is_int(b)) {
-        dst->val.Bool = a.val.Int64 < b.val.Int64;
-    } else if(is_int(a) && is_float(b)) {
-        dst->val.Bool = (float)a.val.Int64 < b.val.Float64;
-    } else if(is_float(a) && is_int(b)) {
-        dst->val.Bool = a.val.Float64 < (float)b.val.Int64;
-    } else if(is_float(a) && is_float(b)) {
-        dst->val.Bool = a.val.Float64 < b.val.Float64;
-    } else {
-        error("Ilegal type in bool lower_than");
-    }
-}
-
-void do_bool_higher_equal(Variable a, Variable b, Variable *dst) {
-    dst->type = Bool;
-    if(is_bool(a) && is_bool(b)) {
-        dst->val.Bool = a.val.Bool >= b.val.Bool;
-    } else if(is_int(a) && is_int(b)) {
-        dst->val.Bool = a.val.Int64 >= b.val.Int64;
-    } else if(is_int(a) && is_float(b)) {
-        dst->val.Bool = (float)a.val.Int64 >= b.val.Float64;
-    } else if(is_float(a) && is_int(b)) {
-        dst->val.Bool = a.val.Float64 >= (float)b.val.Int64;
-    } else if(is_float(a) && is_float(b)) {
-        dst->val.Bool = a.val.Float64 >= b.val.Float64;
-    } else {
-        error("Ilegal type in bool higher equal");
-    }
-}
-
-void do_bool_lower_equal(Variable a, Variable b, Variable *dst) {
-    dst->type = Bool;
-    if(is_bool(a) && is_bool(b)) {
-        dst->val.Bool = a.val.Bool <= b.val.Bool;
-    } else if(is_int(a) && is_int(b)) {
-        dst->val.Bool = a.val.Int64 <= b.val.Int64;
-    } else if(is_int(a) && is_float(b)) {
-        dst->val.Bool = (float)a.val.Int64 <= b.val.Float64;
-    } else if(is_float(a) && is_int(b)) {
-        dst->val.Bool = a.val.Float64 <= (float)b.val.Int64;
-    } else if(is_float(a) && is_float(b)) {
-        dst->val.Bool = a.val.Float64 <= b.val.Float64;
-    } else {
-        error("Ilegal type in bool lower equal");
-    }
-}
-
-void do_pow(Variable v1, Variable v2, Variable *res) {
-    if(is_int(v1) && is_int(v2)) {
-        res->type = Int64;
-        res->val.Int64 = pow(v1.val.Int64, v2.val.Int64);
-        return;
-    }
-
-    res->type = Float64;
-
-    if(is_int(v1) && is_float(v2)) {
-        res->val.Float64 = pow(v1.val.Int64, v2.val.Float64);
-    }
-
-    if(is_float(v1) && is_int(v2)) {
-        res->val.Float64 = pow(v1.val.Float64, v2.val.Int64);
-    }
-
-    if(is_float(v1) && is_float(v2)) {
-        res->val.Float64 = pow(v1.val.Float64, v2.val.Float64);
-    }
-
-}
-
-void do_div(Variable v1, Variable v2, Variable *res) {
-    if(is_int(v1) && is_int(v2)) {
-        res->type = Int64;
-        res->val.Int64 = v1.val.Int64 / v2.val.Int64;
-        return;
-    } 
-    
-    res->type = Float64;
-    
-    if(is_int(v1) && is_float(v2)) {
-        res->val.Float64 = v1.val.Int64 / v2.val.Float64;
-    }
-
-    if(is_float(v1) && is_int(v2)) {
-        res->val.Float64 = v1.val.Float64 / v2.val.Int64;
-    }
-
-    if(is_float(v1) && is_float(v2)) {
-        res->val.Float64 = v1.val.Float64 / v2.val.Float64;
-    }
-
-}
-
-void mult_int_vector(Variable v1, Variable v2, Variable *res) {
-    for(int i = 0; i < v1.val.Int64Vector.n_elem; i++) {
-        res->val.Int64Vector.v[i] = v1.val.Int64Vector.v[i] * v2.val.Int64Vector.v[i];
-    }
-}
-
-void mult_float_vector(Variable v1, Variable v2, Variable *res) {
-    for(int i = 0; i < v1.val.Float64Vector.n_elem; i++) {
-        res->val.Float64Vector.v[i] = v1.val.Float64Vector.v[i] * v2.val.Float64Vector.v[i];
-    }
-}
-
-void mult_int_float_vector(Variable v1, Variable v2, Variable *res) {
-    for(int i = 0; i < v1.val.Int64Vector.n_elem; i++) {
-        res->val.Float64Vector.v[i] = v1.val.Int64Vector.v[i] * v2.val.Float64Vector.v[i];
-    }
-}
-
-void do_vector_mult(Variable v1, Variable v2, Variable *res) {
-    if(is_int_vector(v1) && is_int_vector(v2)) {
-        if(v1.val.Int64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
-        
-        res->type = Int64Vector;
-        res->val.Int64Vector.v = (int *)malloc(sizeof(int) * v1.val.Int64Vector.n_elem);
-        res->val.Int64Vector.n_elem = v1.val.Int64Vector.n_elem;
-        
-        mult_int_vector(v1, v2, res);
-    }
-    
-    if(is_int_vector(v1) && is_float_vector(v2)) {
-        if(v1.val.Int64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
-        
-        res->type = Float64Vector;
-        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Int64Vector.n_elem);
-        res->val.Float64Vector.n_elem = v1.val.Int64Vector.n_elem;
-        
-        mult_int_float_vector(v1, v2, res);
-    }
-
-    if(is_float_vector(v1) && is_int_vector(v2)) {
-        if(v1.val.Float64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
-        
-        res->type = Float64Vector;
-        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Float64Vector.n_elem);
-        res->val.Int64Vector.n_elem = v1.val.Float64Vector.n_elem;
-        
-        mult_int_float_vector(v2, v1, res);
-    }
-
-    if(is_float_vector(v1) && is_float_vector(v2)) {
-        if(v1.val.Float64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
-        
-        res->type = Float64Vector;
-        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Float64Vector.n_elem);
-        res->val.Float64Vector.n_elem = v1.val.Float64Vector.n_elem;
-        
-        mult_float_vector(v1, v2, res);
-    }
-}
-
-void mult_int_scalar_vector(Variable v1, Variable v2, Variable *res) {
-    if(is_int_vector(v2)) {
-        res->type = Int64Vector;
-        res->val.Int64Vector.n_elem = v2.val.Int64Vector.n_elem;
-        res->val.Int64Vector.v = (int *)malloc(sizeof(int) * v2.val.Int64Vector.n_elem);
-        for(int i = 0; i < res->val.Int64Vector.n_elem; i++) {
-            res->val.Int64Vector.v[i] = v1.val.Int64 * v2.val.Int64Vector.v[i];
-        }
-    } else {
-        res->type = Float64Vector;
-        res->val.Float64Vector.n_elem = v2.val.Float64Vector.n_elem;
-        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v2.val.Float64Vector.n_elem);
-        for(int i = 0; i < res->val.Float64Vector.n_elem; i++) {
-            res->val.Float64Vector.v[i] = v1.val.Int64 * v2.val.Float64Vector.v[i];
-        }
-    }
-}
-
-void mult_float_scalar_vector(Variable v1, Variable v2, Variable *res) {
-    res->type = Float64Vector;
-    if(is_int_vector(v2)) {
-        res->val.Float64Vector.n_elem = v2.val.Int64Vector.n_elem;
-        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v2.val.Int64Vector.n_elem);
-        for(int i = 0; i < res->val.Float64Vector.n_elem; i++) {
-            res->val.Float64Vector.v[i] = v1.val.Float64 * v2.val.Int64Vector.v[i];
-        }
-    } else {
-        res->val.Float64Vector.n_elem = v2.val.Float64Vector.n_elem;
-        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v2.val.Float64Vector.n_elem);
-        for(int i = 0; i < res->val.Float64Vector.n_elem; i++) {
-            res->val.Float64Vector.v[i] = v1.val.Float64 * v2.val.Float64Vector.v[i];
-        }
-    }
-}
-
-void do_mult_vector_scalar(Variable v1, Variable v2, Variable *res) {
-    if(is_int(v1) && is_vector(v2)) mult_int_scalar_vector(v1, v2, res);
-    if(is_float(v1) && is_vector(v2)) mult_float_scalar_vector(v1, v2, res);
-    
-    if(is_vector(v1) && is_int(v2)) mult_int_scalar_vector(v2, v1, res);
-    if(is_vector(v1) && is_float(v2)) mult_float_scalar_vector(v2, v1, res);
-}
-
-void do_mult(Variable v1, Variable v2, Variable *res) {
-    if(is_int(v1) && is_int(v2)) {
-        res->type = Int64;
-        res->val.Int64 = v1.val.Int64 * v2.val.Int64;
-    } 
-    
-    if(is_string(v1) && is_string(v2)) {
-        res->type = String;
-        res->val.String = concat_string(v1, v2);
-    }
-    
-    if(is_int(v1) && is_float(v2)) {
-        res->val.Float64 = v1.val.Int64 * v2.val.Float64;
-        res->type = Float64;
-    }
-
-    if(is_float(v1) && is_int(v2)) {
-        res->val.Float64 = v1.val.Float64 * v2.val.Int64;
-        res->type = Float64;
-    }
-
-    if(is_float(v1) && is_float(v2)) {
-        res->val.Float64 = v1.val.Float64 * v2.val.Float64;
-        res->type = Float64;
-    }
-
-    if(is_vector(v1) && is_int_or_float(v2) || is_int_or_float(v1) && is_vector(v2)) do_mult_vector_scalar(v1, v2, res);
-
-    if(is_vector(v1) && is_vector(v2)) do_vector_mult(v1, v2, res);
-
-}
-
-void add_int_vector(Variable v1, Variable v2, Variable *res) {
-    for(int i = 0; i < v1.val.Int64Vector.n_elem; i++) {
-        res->val.Int64Vector.v[i] = v1.val.Int64Vector.v[i] + v2.val.Int64Vector.v[i];
-    }
-}
-
-void add_float_vector(Variable v1, Variable v2, Variable *res) {
-    for(int i = 0; i < v1.val.Float64Vector.n_elem; i++) {
-        res->val.Float64Vector.v[i] = v1.val.Float64Vector.v[i] + v2.val.Float64Vector.v[i];
-    }
-}
-
-void add_int_float_vector(Variable v1, Variable v2, Variable *res) {
-    for(int i = 0; i < v1.val.Int64Vector.n_elem; i++) {
-        res->val.Float64Vector.v[i] = v1.val.Int64Vector.v[i] + v2.val.Float64Vector.v[i];
-    }
-}
-
-void sub_int_vector(Variable v1, Variable v2, Variable *res) {
-    for(int i = 0; i < v1.val.Int64Vector.n_elem; i++) {
-        res->val.Int64Vector.v[i] = v1.val.Int64Vector.v[i] - v2.val.Int64Vector.v[i];
-    }
-}
-
-void sub_float_vector(Variable v1, Variable v2, Variable *res) {
-    for(int i = 0; i < v1.val.Float64Vector.n_elem; i++) {
-        res->val.Float64Vector.v[i] = v1.val.Float64Vector.v[i] - v2.val.Float64Vector.v[i];
-    }
-}
-
-void sub_int_float_vector(Variable v1, Variable v2, Variable *res) {
-    for(int i = 0; i < v1.val.Int64Vector.n_elem; i++) {
-        res->val.Float64Vector.v[i] = v1.val.Int64Vector.v[i] - v2.val.Float64Vector.v[i];
-    }
-}
-
-void do_vector_add(Variable v1, Variable v2, Variable *res) {
-    if(is_int_vector(v1) && is_int_vector(v2)) {
-        if(v1.val.Int64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
-        
-        res->type = Int64Vector;
-        res->val.Int64Vector.v = (int *)malloc(sizeof(int) * v1.val.Int64Vector.n_elem);
-        res->val.Int64Vector.n_elem = v1.val.Int64Vector.n_elem;
-        
-        add_int_vector(v1, v2, res);
-    } else if(is_int_vector(v1) && is_float_vector(v2)) {
-        if(v1.val.Int64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
-        
-        res->type = Float64Vector;
-        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Int64Vector.n_elem);
-        res->val.Float64Vector.n_elem = v1.val.Int64Vector.n_elem;
-        
-        add_int_float_vector(v1, v2, res);
-    } else if(is_float_vector(v1) && is_int_vector(v2)) {
-        if(v1.val.Float64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
-        
-        res->type = Float64Vector;
-        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Float64Vector.n_elem);
-        res->val.Int64Vector.n_elem = v1.val.Float64Vector.n_elem;
-        
-        add_int_float_vector(v2, v1, res);
-    } else if(is_float_vector(v1) && is_float_vector(v2)) {
-        if(v1.val.Float64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
-        
-        res->type = Float64Vector;
-        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Float64Vector.n_elem);
-        res->val.Float64Vector.n_elem = v1.val.Float64Vector.n_elem;
-        
-        add_float_vector(v1, v2, res);
-    } else {
-        error("Ilegal type in vector add");
-    }
-}
-
-void do_vector_sub(Variable v1, Variable v2, Variable *res) {
-    if(is_int_vector(v1) && is_int_vector(v2)) {
-        if(v1.val.Int64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
-        
-        res->type = Int64Vector;
-        res->val.Int64Vector.v = (int *)malloc(sizeof(int) * v1.val.Int64Vector.n_elem);
-        res->val.Int64Vector.n_elem = v1.val.Int64Vector.n_elem;
-        
-        sub_int_vector(v1, v2, res);
-    } else if(is_int_vector(v1) && is_float_vector(v2)) {
-        if(v1.val.Int64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
-        
-        res->type = Float64Vector;
-        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Int64Vector.n_elem);
-        res->val.Float64Vector.n_elem = v1.val.Int64Vector.n_elem;
-        
-        sub_int_float_vector(v1, v2, res);
-    } else if(is_float_vector(v1) && is_int_vector(v2)) {
-        if(v1.val.Float64Vector.n_elem != v2.val.Int64Vector.n_elem) error("Can't add two vectors with different size");
-        
-        res->type = Float64Vector;
-        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Float64Vector.n_elem);
-        res->val.Int64Vector.n_elem = v1.val.Float64Vector.n_elem;
-        
-        sub_int_float_vector(v2, v1, res);
-    } else if(is_float_vector(v1) && is_float_vector(v2)) {
-        if(v1.val.Float64Vector.n_elem != v2.val.Float64Vector.n_elem) error("Can't add two vectors with different size");
-        
-        res->type = Float64Vector;
-        res->val.Float64Vector.v = (float *)malloc(sizeof(float) * v1.val.Float64Vector.n_elem);
-        res->val.Float64Vector.n_elem = v1.val.Float64Vector.n_elem;
-        
-        sub_float_vector(v1, v2, res);
-    } else {
-        error("Ilegal type in sub vector");
-    }
-}
-
-void do_sub(Variable v1, Variable v2, Variable *res) {
-    if(is_int(v1) && is_int(v2)) {
-        res->type = Int64;
-        res->val.Int64 = v1.val.Int64 - v2.val.Int64;
-    } else if(is_int(v1) && is_float(v2)) {
-        res->val.Float64 = v1.val.Int64 - v2.val.Float64;
-        res->type = Float64;
-    } else if(is_float(v1) && is_int(v2)) {
-        res->val.Float64 = v1.val.Float64 - v2.val.Int64;
-        res->type = Float64;
-    } else if(is_float(v1) && is_float(v2)) {
-        res->val.Float64 = v1.val.Float64 - v2.val.Float64;
-        res->type = Float64;
-    } else if(is_vector(v1) && is_vector(v2)) {
-        do_vector_sub(v1, v2, res);
-    } else {
-        error("Ilegal type in sub");
-    }
-
-}
-
-void do_add(Variable v1, Variable v2, Variable *res) {
-    if(is_int(v1) && is_int(v2)) {
-        res->type = Int64;
-        res->val.Int64 = v1.val.Int64 + v2.val.Int64;
-    } else if(is_int(v1) && is_float(v2)) {
-        res->val.Float64 = v1.val.Int64 + v2.val.Float64;
-        res->type = Float64;
-    } else if(is_float(v1) && is_int(v2)) {
-        res->val.Float64 = v1.val.Float64 + v2.val.Int64;
-        res->type = Float64;
-    } else if(is_float(v1) && is_float(v2)) {
-        res->val.Float64 = v1.val.Float64 + v2.val.Float64;
-        res->type = Float64;
-    } else if(is_vector(v1) && is_vector(v2)) {
-        do_vector_add(v1, v2, res);
-    } else {
-        error("Ilegal type in add");
-    }
-}
-
-bool is_string(Variable v1) {
-    return v1.type == String;
-}
-
-char* concat_string(Variable v1, Variable v2) {
-    int size_v1 = strlen(v1.val.String);
-    int size_v2 = strlen(v2.val.String);
-    char *concated = malloc(size_v1 + size_v2 + 1);
-    strcpy(concated, v1.val.String);
-    strcat(concated, v2.val.String);
-    return concated;
-}
-
+//-------------errors handlers-------------
 void symtab_error_handle(const char *str, int error_code) {
     switch (error_code) {
         case SYMTAB_OK:
@@ -539,6 +35,85 @@ void symtab_error_handle(const char *str, int error_code) {
         case SYMTAB_NOT_TOP:
             printf("[ERROR] Symtab not top in %s\n", str);
             exit(1);
+            break;
+    }
+}
+
+void error(char *str) {
+    printf("%s\n", str);
+    exit(1);
+}
+
+
+//-------------Type check-------------
+bool is_int_vector(Variable v) {return v.type == Int64Vector;}
+
+bool is_float_vector(Variable v) {return v.type == Float64Vector;}
+
+bool is_int_matrix(Variable v) {return v.type == Int64Matrix;}
+
+bool is_float_matrix(Variable v) {return v.type == Float64Matrix;}
+
+bool is_int(Variable v) {
+    return v.type == Int64;
+}
+
+bool is_float(Variable v) {
+    return v.type == Float64;
+}
+
+bool is_int_or_float(Variable v1) {
+    return is_int(v1) || is_float(v1);
+}
+
+bool is_matrix(Variable v) {
+    return v.type == Int64Matrix || v.type == Float64Matrix;
+}
+
+bool is_vector(Variable v) {
+    return is_int_vector(v) || is_float_vector(v);
+}
+
+bool is_bool(Variable v) {
+    return v.type == Bool;
+}
+
+bool is_string(Variable v1) {
+    return v1.type == String;
+}
+
+
+//-------------Val getters-------------
+int get_val_int(Variable var) {
+    return var.type == Int64 ? var.val.Int64 : var.val.Float64;
+}
+
+float get_val_float(Variable var) {
+    return var.type == Int64 ? var.val.Int64 : var.val.Float64;
+}
+
+
+//-------------Prints-------------
+void print_matrix(Variable v) {
+    switch (v.type) {
+        case Int64Matrix:
+            for(int i = 0; i < v.val.Int64Matrix.n_rows; i++) {
+                for(int j = 0; j < v.val.Int64Matrix.n_cols; j++){
+                    printf("%i ", v.val.Int64Matrix.m[i * v.val.Int64Matrix.n_cols + j]);
+                }
+                printf("\n");
+            }
+            break;
+        case Float64Matrix:
+            for(int i = 0; i < v.val.Float64Matrix.n_rows; i++) {
+                for(int j = 0; j < v.val.Float64Matrix.n_cols; j++){
+                    printf("%f ", v.val.Float64Matrix.m[i * v.val.Float64Matrix.n_cols + j]);
+                }
+                printf("\n");
+            }
+            break;
+        default:
+            error("Ilegal type in print_matrix");
             break;
     }
 }
@@ -604,35 +179,13 @@ void print_var(char* str, Variable var) {
         }
 }
 
+
 void crop_first_last_elem(char **str) {
     *str = *str + 1;
     (*str)[strlen(*str) - 1] = '\0';
 }
 
-void print_matrix(Variable v) {
-    switch (v.type) {
-        case Int64Matrix:
-            for(int i = 0; i < v.val.Int64Matrix.n_rows; i++) {
-                for(int j = 0; j < v.val.Int64Matrix.n_cols; j++){
-                    printf("%i ", v.val.Int64Matrix.m[i * v.val.Int64Matrix.n_cols + j]);
-                }
-                printf("\n");
-            }
-            break;
-        case Float64Matrix:
-            for(int i = 0; i < v.val.Float64Matrix.n_rows; i++) {
-                for(int j = 0; j < v.val.Float64Matrix.n_cols; j++){
-                    printf("%f ", v.val.Float64Matrix.m[i * v.val.Float64Matrix.n_cols + j]);
-                }
-                printf("\n");
-            }
-            break;
-        default:
-            error("Ilegal type in print_matrix");
-            break;
-    }
-}
-
+//-------------Symtab store, get-------------
 void store_val(Variable var) {
     print_var("store_val", var);
     int ret = sym_add(var.var_name, &var);
@@ -649,6 +202,14 @@ void get_val(char *key, Variable *v) {
     if(ret != SYMTAB_OK) symtab_error_handle("loockup in show val!", ret);
 }
 
+void show_val(char *key) {
+    Variable v;
+    int ret = sym_lookup(key, &v);
+    if(ret != SYMTAB_OK) symtab_error_handle("loockup in show val!", ret);
+    print_var("show_val", v);
+}
+
+//-------------Get matrix, vector elems-------------
 void get_id_matrix_elem(char *matrix_name, char *row_idx_name, char *col_idx_name, Variable *dst) {
     Variable row_idx, col_idx;
     get_val(row_idx_name, &row_idx);
@@ -677,7 +238,6 @@ void get_matrix_elem(char *matrix_name, int row, int col, Variable *dst) {
             break;
     }
 }
-
 
 void get_id_vector_elem(char *vector_name, char *vector_idx_name, Variable *res) {
     Variable index;
@@ -708,62 +268,8 @@ void get_vector_elem(char *vector_name, int idx, Variable *dst) {
     }
 }
 
-void do_chs(Variable src, Variable *dst) {
-    dst->type = src.type;
-    dst->var_name = src.var_name;
-    switch (src.type) {
-        case Int64:
-            dst->val.Int64 = -1 * src.val.Int64;
-            break;
-        case Float64:
-            dst->val.Float64 = -1 * src.val.Float64;
-            break;
-        default:
-            error("Ilegal type in chs!");
-            break;
-    }
-}
 
-void show_val(char *key) {
-    Variable v;
-    int ret = sym_lookup(key, &v);
-    if(ret != SYMTAB_OK) symtab_error_handle("loockup in show val!", ret);
-    print_var("show_val", v);
-}
-
-void fill_vector(char *in_str, Variable *var) {
-    printf("[DEBUG fill_vector types.c] Vector string: %s\n", in_str);
-    int n_elem = 1;
-    for(int i = 0; in_str[i] != '\0'; i++) {
-        if(in_str[i] == ';') n_elem++;
-    }
-    printf("[DEBUG fill_vector types.c] Nelem in vector = %i\n", n_elem);
-
-    switch (var->type) {
-        case Int64Vector:
-            var->val.Int64Vector.n_elem = n_elem;
-            var->val.Int64Vector.v = (int *) malloc(sizeof(int) * n_elem);
-            char *token = strtok(in_str, ";");
-            for(int i = 0; i < n_elem && token != NULL; i++) {
-                var->val.Int64Vector.v[i] = atoi(token);
-                token = strtok(NULL, ";");
-            }
-            break;
-        case Float64Vector:
-            var->val.Float64Vector.n_elem = n_elem;
-            var->val.Float64Vector.v = (float *) malloc(sizeof(float) * n_elem);
-            char *t = strtok(in_str, ";");
-            for(int i = 0; i < n_elem && t != NULL; i++) {
-                var->val.Float64Vector.v[i] = atof(t);
-                t = strtok(NULL, ";");
-            }
-            break;
-        default:
-            error("Ilegal type in vector!");
-            break;
-    }
-}
-
+//-------------Matrix treatment-------------
 void print_node_col(NodeCol *col) {
     switch (col->col_type) {
        case Int64:
@@ -793,14 +299,6 @@ void print_node_row(NodeRow *row) {
         print_node_col(row->val);
         row = row->next;
     }
-}
-
-int get_val_int(Variable var) {
-    return var.type == Int64 ? var.val.Int64 : var.val.Float64;
-}
-
-float get_val_float(Variable var) {
-    return var.type == Int64 ? var.val.Int64 : var.val.Float64;
 }
 
 void store_matrix(NodeRow *row, Variable *var) {

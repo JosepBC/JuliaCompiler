@@ -1,5 +1,7 @@
 %code requires {
     #include "types.h"
+    #include "arithmetic_ops.h"
+    #include "bool_ops.h"
 }
 
 %{
@@ -79,7 +81,7 @@
 
 %%
 prog : sentence_list;
-sentence_list : sentence_list sentence ENTER | sentence_list ENTER | ENTER;
+sentence_list : sentence_list sentence ENTER | sentence ENTER;
 sentence : assignation_sentence | expression {print_var("Expression", $1);};
 assignation_sentence : ID EQUALS expression {
     Variable v;

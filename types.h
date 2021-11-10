@@ -47,43 +47,30 @@ typedef struct Node_row_t {
     Type row_type;
 } NodeRow;
 
-extern void store_val(Variable var);
-extern void show_val(char *key);
-extern void fill_vector(char *in_str, Variable *var);
-extern void crop_first_last_elem(char **str);
-extern void print_vector(Variable v);
-extern void print_matrix(Variable v);
-extern void print_node_row(NodeRow *row);
-extern void print_node_col(NodeCol *col);
-extern void store_matrix(NodeRow *row, Variable *var);
-extern void print_var(char* str, Variable var);
 extern bool is_int_or_float(Variable v1);
 extern bool is_int(Variable v);
 extern bool is_float(Variable v);
-extern bool is_matrix(Variable v);
+extern bool is_int_vector(Variable v);
+extern bool is_float_vector(Variable v);
+extern bool is_int_matrix(Variable v);
+extern bool is_float_matrix(Variable v);
 extern bool is_vector(Variable v);
-extern bool is_string(Variable v1);
-extern char* concat_string(Variable v1, Variable v2);
-extern void do_pow(Variable v1, Variable v2, Variable *res);
-extern void do_div(Variable v1, Variable v2, Variable *res);
-extern void do_mult(Variable v1, Variable v2, Variable *res);
-extern void do_add(Variable v1, Variable v2, Variable *res);
-extern void do_sub(Variable v1, Variable v2, Variable *res);
+extern bool is_string(Variable v);
+extern bool is_bool(Variable v);
+extern void error(char *str);
+
+extern void store_val(Variable var);
+extern void crop_first_last_elem(char **str);
+extern void print_node_row(NodeRow *row);
+extern void store_matrix(NodeRow *row, Variable *var);
+extern void print_var(char* str, Variable var);
+
+
 extern void get_val(char *key, Variable *v);
-extern void do_chs(Variable src, Variable *dst);
+
 extern void get_vector_elem(char *vector_name, int idx, Variable *dst);
 extern void get_matrix_elem(char *matrix_name, int row, int col, Variable *dst);
 extern void get_id_vector_elem(char *vector_name, char *vector_idx_name, Variable *res);
 extern void get_id_matrix_elem(char *matrix_name, char *row_idx_name, char *col_idx_name, Variable *dst);
-extern void do_bool_equals(Variable a, Variable b, Variable *dst);
-extern void do_bool_and(Variable a, Variable b, Variable *dst);
-extern void do_bool_or(Variable a, Variable b, Variable *dst);
-extern void do_bool_not(Variable a, Variable *dst);
-extern void do_bool_diff(Variable a, Variable b, Variable *dst);
 
-
-extern void do_bool_higher_than(Variable a, Variable b, Variable *dst);
-extern void do_bool_lower_than(Variable a, Variable b, Variable *dst);
-extern void do_bool_higher_equal(Variable a, Variable b, Variable *dst);
-extern void do_bool_lower_equal(Variable a, Variable b, Variable *dst);
 #endif
