@@ -70,11 +70,12 @@
 %type<var> mult_list;
 %type<var> add_list;
 %type<var> value;
+%type<var> parenthesis;
 
 %%
 prog : sentence_list;
 sentence_list : sentence_list sentence ENTER | sentence ENTER;
-sentence : assignation_sentence | expression;
+sentence : assignation_sentence | expression {print_var("Expression", $1);};
 assignation_sentence : ID EQUALS expression {
     Variable v;
     v.var_name = $1.var_name;
@@ -169,7 +170,12 @@ pow_list : pow_list ARITHMETIC_POW value {
 
 value : int_expression {$$ = $1;} | float_expression {$$ = $1;} | 
             string_expression {$$ = $1;} | boolean_expression {$$ = $1;} | 
-            id_expression {get_val($1.var_name, &$$);} | m {$$ = $1;} | OPEN_P add_list CLOSE_P {$$ = $2;};
+            id_expression {get_val($1.var_name, &$$);} | m {$$ = $1;} | parenthesis {$$ = $1;} |
+            ARITHMETIC_SUB parenthesis {do_chs($2, &$$);} |
+            ARITHMETIC_SUB id_expression {get_val($2.var_name, &$$); do_chs($$, &$$);}
+
+
+parenthesis : OPEN_P add_list CLOSE_P {$$ = $2;};
 
 
 boolean_expression : or_list {

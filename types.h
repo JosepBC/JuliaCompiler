@@ -70,5 +70,6 @@ extern void do_mult(Variable v1, Variable v2, Variable *res);
 extern void do_add(Variable v1, Variable v2, Variable *res);
 extern void do_sub(Variable v1, Variable v2, Variable *res);
 extern void get_val(char *key, Variable *v);
+extern void do_chs(Variable src, Variable *dst);
 
 #endif

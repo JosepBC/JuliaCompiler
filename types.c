@@ -358,21 +358,16 @@ void do_add(Variable v1, Variable v2, Variable *res) {
     if(is_int(v1) && is_int(v2)) {
         res->type = Int64;
         res->val.Int64 = v1.val.Int64 + v2.val.Int64;
-        printf("Do_add1 %i %i\n", v1.type, v2.type);
     } else if(is_int(v1) && is_float(v2)) {
         res->val.Float64 = v1.val.Int64 + v2.val.Float64;
         res->type = Float64;
-        printf("Do_add2 %i %i\n", v1.type, v2.type);
     } else if(is_float(v1) && is_int(v2)) {
         res->val.Float64 = v1.val.Float64 + v2.val.Int64;
         res->type = Float64;
-        printf("Do_add3 %i %i\n", v1.type, v2.type);
     } else if(is_float(v1) && is_float(v2)) {
         res->val.Float64 = v1.val.Float64 + v2.val.Float64;
         res->type = Float64;
-        printf("Do_add4 %i %i\n", v1.type, v2.type);
     } else if(is_vector(v1) && is_vector(v2)) {
-        printf("Is vector %i %i\n", v1.type, v2.type);
         do_vector_add(v1, v2, res);
     } else {
         error("Ilegal type in add");
@@ -527,6 +522,22 @@ void store_val(Variable var) {
 void get_val(char *key, Variable *v) {
     int ret = sym_lookup(key, v);
     if(ret != SYMTAB_OK) symtab_error_handle("loockup in show val!", ret);
+}
+
+void do_chs(Variable src, Variable *dst) {
+    dst->type = src.type;
+    dst->var_name = src.var_name;
+    switch (src.type) {
+        case Int64:
+            dst->val.Int64 = -1 * src.val.Int64;
+            break;
+        case Float64:
+            dst->val.Float64 = -1 * src.val.Float64;
+            break;
+        default:
+            error("Ilegal type in chs!");
+            break;
+    }
 }
 
 void show_val(char *key) {
