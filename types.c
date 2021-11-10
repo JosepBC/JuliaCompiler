@@ -524,6 +524,65 @@ void get_val(char *key, Variable *v) {
     if(ret != SYMTAB_OK) symtab_error_handle("loockup in show val!", ret);
 }
 
+void get_id_matrix_elem(char *matrix_name, char *row_idx_name, char *col_idx_name, Variable *dst) {
+    Variable row_idx, col_idx;
+    get_val(row_idx_name, &row_idx);
+    get_val(col_idx_name, &col_idx);
+    if(row_idx.type != Int64 || col_idx.type != Int64) error("ilegal type in matrix index");
+    get_matrix_elem(matrix_name, row_idx.val.Int64, col_idx.val.Int64, dst);
+}
+
+void get_matrix_elem(char *matrix_name, int row, int col, Variable *dst) {
+    Variable m;
+    get_val(matrix_name, &m);
+    switch (m.type) {
+        case Int64Matrix:
+            if(row < 0 || col < 0 || row > m.val.Int64Matrix.n_rows - 1 || col > m.val.Int64Matrix.n_cols - 1) error("Index out of bounds!");
+            dst->type = Int64;
+            dst->val.Int64 = m.val.Int64Matrix.m[row * m.val.Int64Matrix.n_cols + col];
+            break;
+        case Float64Matrix:
+            if(row < 0 || col < 0 || row > m.val.Float64Matrix.n_rows - 1 || col > m.val.Float64Matrix.n_cols - 1) error("Index out of bounds!");
+            dst->type = Float64;
+            dst->val.Int64 = m.val.Float64Matrix.m[row * m.val.Float64Matrix.n_cols + col];
+            break;
+
+        default:
+            error("Ilegal type while trying to get an elem from a matrix!");
+            break;
+    }
+}
+
+
+void get_id_vector_elem(char *vector_name, char *vector_idx_name, Variable *res) {
+    Variable index;
+    get_val(vector_idx_name, &index);
+    if(index.type != Int64) error("Ilegal type in vector idx");
+
+    get_vector_elem(vector_name, index.val.Int64, res);
+}
+
+void get_vector_elem(char *vector_name, int idx, Variable *dst) {
+    Variable v;
+    get_val(vector_name, &v);
+    switch (v.type) {
+        case Int64Vector:
+            if(idx < 0 || idx > v.val.Int64Vector.n_elem - 1) error("Index out of bounds!");
+            dst->type = Int64;
+            dst->val.Int64 = v.val.Int64Vector.v[idx];
+            break;
+        case Float64Vector:
+            if(idx < 0 || idx > v.val.Float64Vector.n_elem - 1) error("Index out of bounds!");
+            dst->type = Float64;
+            dst->val.Int64 = v.val.Float64Vector.v[idx];
+            break;
+
+        default:
+            error("Ilegal type while trying to get an elem from a vector!");
+            break;
+    }
+}
+
 void do_chs(Variable src, Variable *dst) {
     dst->type = src.type;
     dst->var_name = src.var_name;

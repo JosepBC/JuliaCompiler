@@ -40,7 +40,12 @@ sub                     -
 add                     \+
 open_p                  \(
 close_p                 \)
+comma                   ,
 %%
+{comma} {
+    return COMMA;
+}
+
 {open_p} {
     return OPEN_P;
 }

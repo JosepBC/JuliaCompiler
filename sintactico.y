@@ -50,6 +50,7 @@
 %token ARITHMETIC_ADD
 %token OPEN_P
 %token CLOSE_P
+%token COMMA
 
 %type<var> int_expression;
 %type<var> float_expression;
@@ -71,6 +72,8 @@
 %type<var> add_list;
 %type<var> value;
 %type<var> parenthesis;
+%type<var> vector_elem;
+%type<var> matrix_elem;
 
 %%
 prog : sentence_list;
@@ -171,9 +174,24 @@ pow_list : pow_list ARITHMETIC_POW value {
 value : int_expression {$$ = $1;} | float_expression {$$ = $1;} | 
             string_expression {$$ = $1;} | boolean_expression {$$ = $1;} | 
             id_expression {get_val($1.var_name, &$$);} | m {$$ = $1;} | parenthesis {$$ = $1;} |
+            vector_elem{$$ = $1;} | matrix_elem {$$ = $1;} |
             ARITHMETIC_SUB parenthesis {do_chs($2, &$$);} |
-            ARITHMETIC_SUB id_expression {get_val($2.var_name, &$$); do_chs($$, &$$);}
+            ARITHMETIC_SUB id_expression {get_val($2.var_name, &$$); do_chs($$, &$$);} |
+            ARITHMETIC_SUB vector_elem {do_chs($2, &$$);} |
+            ARITHMETIC_SUB matrix_elem {do_chs($2, &$$);}
 
+
+matrix_elem : ID OPEN_M INT COMMA INT CLOSE_M {
+    get_matrix_elem($1.var_name, $3.val.Int64, $5.val.Int64, &$$);
+} | ID OPEN_M ID COMMA ID CLOSE_M {
+    get_id_matrix_elem($1.var_name, $3.var_name, $5.var_name, &$$);
+}
+
+vector_elem : ID OPEN_M INT CLOSE_M {
+    get_vector_elem($1.var_name, $3.val.Int64, &$$);
+} | ID OPEN_M ID CLOSE_M {
+    get_id_vector_elem($1.var_name, $3.var_name, &$$);
+}
 
 parenthesis : OPEN_P add_list CLOSE_P {$$ = $2;};
 
