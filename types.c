@@ -251,6 +251,7 @@ void crop_first_last_elem(char **str) {
     (*str)[strlen(*str) - 1] = '\0';
 }
 
+
 //-------------Symtab store, get-------------
 void store_val(Variable var, FILE *out) {
     print_var("store_val", var, out);
