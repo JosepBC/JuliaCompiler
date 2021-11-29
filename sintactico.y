@@ -65,11 +65,6 @@
 %type<nr> row_list;
 %type<nc> row;
 %type<var> m;
-%type<var> boolean_expression;
-%type<var> and_list;
-%type<var> or_list;
-%type<var> not;
-%type<var> bool_equals_list;
 %type<var> pow_list;
 %type<var> mult_list;
 %type<var> add_list;
@@ -77,8 +72,6 @@
 %type<var> arithmetic_parenthesis;
 %type<var> vector_elem;
 %type<var> matrix_elem;
-%type<var> bool_relational_list;
-%type<var> bool_parenthesis;
 
 %%
 prog : sentence_list;
@@ -120,19 +113,9 @@ assignation_sentence : ID EQUALS expression {
 };
 
 
-int_expression : INT {
-    $$ = $1;
-};
+expression : add_list{$$ = $1;};
 
-float_expression : FLOAT {
-    $$ = $1;
-};
 
-string_expression : STRING {
-    $$ = $1;
-};
-
-expression : boolean_expression {$$ = $1;} | add_list{$$ = $1;};
 
 add_list : add_list ARITHMETIC_ADD mult_list {
     if(DEBUG) printf("add\n");
@@ -165,7 +148,6 @@ mult_list : mult_list ARITHMETIC_MULT pow_list {
     $$ = $1;
 }
 
-
 pow_list : pow_list ARITHMETIC_POW value {
     if(DEBUG) printf("Pow list\n");
     if(!is_int_or_float($1) || !is_int_or_float($3)) yyerror("Ilegal type in pow!");
@@ -175,6 +157,9 @@ pow_list : pow_list ARITHMETIC_POW value {
     if(DEBUG) printf("expression\n");
     $$ = $1;
 }
+
+
+
 
 matrix_elem : ID OPEN_M INT COMMA INT CLOSE_M {
     get_matrix_elem($1.var_name, $3.val.Int64, $5.val.Int64, &$$);
@@ -190,6 +175,23 @@ vector_elem : ID OPEN_M INT CLOSE_M {
 
 arithmetic_parenthesis : OPEN_P add_list CLOSE_P {$$ = $2;};
 
+
+int_expression : INT {
+    $$ = $1;
+};
+
+float_expression : FLOAT {
+    $$ = $1;
+};
+
+string_expression : STRING {
+    $$ = $1;
+};
+
+id_expression : ID {
+    $$.var_name = $1.var_name;
+};
+
 value : int_expression {$$ = $1;} | float_expression {$$ = $1;} |
             string_expression {$$ = $1;} |
             id_expression {get_val($1.var_name, &$$);} | m {$$ = $1;} | arithmetic_parenthesis {$$ = $1;} |
@@ -200,59 +202,6 @@ value : int_expression {$$ = $1;} | float_expression {$$ = $1;} |
             ARITHMETIC_SUB matrix_elem {do_chs($2, &$$);};
 
 
-
-boolean_expression : or_list {
-    $$ = $1;
-};
-
-or_list : or_list BOOL_OR and_list {
-    do_bool_or($1, $3, &$$);
-} | and_list {
-    $$ = $1;
-};
-
-and_list : and_list BOOL_AND bool_equals_list {
-    do_bool_and($1, $3, &$$);
-} | bool_equals_list {
-    $$ = $1;
-};
-
-bool_equals_list : not BOOL_EQUALS not {
-    do_bool_equals($1, $3, &$$);
-} | not BOOL_DIFF not {
-    do_bool_diff($1, $3, &$$);
-} | not {
-    $$ = $1;
-};
-
-
-not : BOOL {
-    $$ = $1;
-} | bool_relational_list {
-    $$ = $1;
-} | bool_parenthesis {
-    $$ = $1;
-} | BOOL_NOT not {
-    do_bool_not($2, &$$);
-};
-
-bool_relational_list : value BOOL_HIGHER_THAN value {
-    do_bool_higher_than($1, $3, &$$);
-} | value BOOL_LOWER_THAN value {
-    do_bool_lower_than($1, $3, &$$);
-} | value BOOL_HIGHER_EQUAL value {
-    do_bool_higher_equal($1, $3, &$$);
-} | value BOOL_LOWER_EQUAL value {
-    do_bool_lower_equal($1, $3, &$$);
-};
-
-
-bool_parenthesis: OPEN_P or_list CLOSE_P {$$ = $2;};
-
-
-id_expression : ID {
-    $$.var_name = $1.var_name;
-};
 
 
 m : OPEN_M row_list CLOSE_M {
@@ -310,11 +259,12 @@ int yyerror(const char *s) {
 }
 
 int main(int argc, char **argv) {
-    yyin = fopen(argv[1], "r");
-    out = fopen(argv[2], "w");
+    // yyin = fopen(argv[1], "r");
+    // out = fopen(argv[2], "w");
+    out = stdout;
     yyparse();
 
-    fclose(out);
-    fclose(yyin);
+    // fclose(out);
+    // fclose(yyin);
     return 1;
 }
