@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdarg.h>
 #include <math.h>
 
 #include "types.h"
@@ -44,6 +45,16 @@ void error(char *str) {
     exit(1);
 }
 
+void printf_error(char *str, ...) {
+    va_list args;
+
+    va_start(args, str);
+    vprintf(str, args);
+    printf("\n");
+    va_end(args);
+    exit(1);
+}
+
 
 //-------------Type check-------------
 bool is_int_vector(Variable v) {return v.type == Int64Vector;}
@@ -54,34 +65,23 @@ bool is_int_matrix(Variable v) {return v.type == Int64Matrix;}
 
 bool is_float_matrix(Variable v) {return v.type == Float64Matrix;}
 
-bool is_int(Variable v) {
-    return v.type == Int64;
-}
+bool is_int(Variable v) {return v.type == Int64;}
 
-bool is_float(Variable v) {
-    return v.type == Float64;
-}
+bool is_float(Variable v) {return v.type == Float64;}
 
-bool is_int_or_float(Variable v1) {
-    return is_int(v1) || is_float(v1);
-}
+bool is_int_or_float(Variable v1) {return is_int(v1) || is_float(v1);}
 
-bool is_matrix(Variable v) {
-    return v.type == Int64Matrix || v.type == Float64Matrix;
-}
+bool is_matrix(Variable v) {return v.type == Int64Matrix || v.type == Float64Matrix;}
 
-bool is_vector(Variable v) {
-    return is_int_vector(v) || is_float_vector(v);
-}
+bool is_vector(Variable v) {return is_int_vector(v) || is_float_vector(v);}
 
-bool is_bool(Variable v) {
-    return v.type == Bool;
-}
+bool is_bool(Variable v) {return v.type == Bool;}
 
-bool is_string(Variable v1) {
-    return v1.type == String;
-}
+bool is_string(Variable v1) {return v1.type == String;}
 
+bool is_literal(Variable v) {return !v.is_variable;}
+
+bool is_variable(Variable v) {return v.is_variable;}
 
 //-------------Val getters-------------
 int get_val_int(Variable var) {
@@ -90,6 +90,16 @@ int get_val_int(Variable var) {
 
 float get_val_float(Variable var) {
     return var.type == Int64 ? var.val.Int64 : var.val.Float64;
+}
+
+int get_var_string_len(Variable v) {
+    if(is_variable(v)) return v.var_name_len + 1;
+
+    switch (v.type) {
+        case Int64:
+        case Float64:
+            return 12;
+    }
 }
 
 
@@ -253,8 +263,7 @@ void crop_first_last_elem(char **str) {
 
 
 //-------------Symtab store, get-------------
-void store_val(Variable var, FILE *out) {
-    print_var("store_val", var, out);
+void store_val(Variable var) {
     int ret = sym_add(var.var_name, &var);
     if(ret == SYMTAB_DUPLICATE) {
         ret = sym_remove(var.var_name);
@@ -274,6 +283,11 @@ void show_val(char *key, FILE *out) {
     int ret = sym_lookup(key, &v);
     if(ret != SYMTAB_OK) symtab_error_handle("loockup in show val!", ret);
     print_var("show_val", v, out);
+}
+
+bool val_exists_in_symtab(char *key) {
+    Variable v;
+    return sym_lookup(key, &v) == SYMTAB_OK;
 }
 
 //-------------Get matrix, vector elems-------------

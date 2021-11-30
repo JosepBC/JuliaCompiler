@@ -9,9 +9,9 @@
 letter                  [a-zA-Z]
 digit                   [0-9]
 letterDigit             [a-zA-Z0-9]
-f                       -?{digit}+([.]{digit}+)?(e-?{digit}+)?
+f                       {digit}+([.]{digit}+)?(e-?{digit}+)?
 string                  \".*\"
-i                       -?{digit}+
+i                       {digit}+
 enter                   \n
 equal                   =
 b                       (true|false)
@@ -134,6 +134,7 @@ comma                   ,
 {b} {
     if(DEBUG) printf("[FLEX Debug] Bool\n");
     yylval.var.val.Bool = yytext[0] == 't';
+    yylval.var.is_variable = false;
     yylval.var.type = Bool;
     return BOOL;
 }
@@ -142,13 +143,16 @@ comma                   ,
     if(DEBUG) printf("[FLEX Debug] String %s\n", yytext); 
     crop_first_last_elem(&yytext);
     yylval.var.val.String = strdup(yytext);
+    yylval.var.is_variable = false;
     yylval.var.type = String; 
     return STRING;
 }
 
 {id} {
     if(DEBUG) printf("[FLEX Debug] ID: %s\n", yytext); 
-    yylval.var.var_name = strdup(yytext); 
+    yylval.var.is_variable = true;
+    yylval.var.var_name = strdup(yytext);
+    yylval.var.var_name_len = strlen(yytext);
     return ID;
 }
 
@@ -156,6 +160,7 @@ comma                   ,
     if(DEBUG) printf("[FLEX Debug] Int64 %s\n", yytext);
     yylval.var.var_name = "";
     yylval.var.val.Int64 = atoi(yytext);
+    yylval.var.is_variable = false;
     yylval.var.type = Int64;
     return INT;
 }
@@ -163,6 +168,7 @@ comma                   ,
 {f} {
     if(DEBUG) printf("[FLEX Debug] Float64 %s\n", yytext);
     yylval.var.val.Float64 = atof(yytext);
+    yylval.var.is_variable = false;
     yylval.var.type = Float64;
     return FLOAT;
 }

@@ -4,10 +4,12 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-typedef enum Type_t {Int64, Float64, String, Bool, Int64Vector, Float64Vector, Int64Matrix, Float64Matrix} Type;
+typedef enum Type_t {Unknown, Int64, Float64, String, Bool, Int64Vector, Float64Vector, Int64Matrix, Float64Matrix} Type;
 typedef struct Variable_t {
     Type type;
     char *var_name;
+    int var_name_len;
+    bool is_variable;
     union {
         char *String;
         int Int64;
@@ -58,20 +60,27 @@ extern bool is_float_matrix(Variable v);
 extern bool is_vector(Variable v);
 extern bool is_string(Variable v);
 extern bool is_bool(Variable v);
+extern bool is_literal(Variable v);
+extern bool is_variable(Variable v);
 extern void error(char *str);
+extern void printf_error(char *str, ...);
 
-extern void store_val(Variable var, FILE *out);
+extern void store_val(Variable var);
 extern void crop_first_last_elem(char **str);
 extern void print_node_row(NodeRow *row);
 extern void store_matrix(NodeRow *row, Variable *var);
 extern void print_var(char* str, Variable var, FILE *out);
 
-
+extern int get_var_string_len(Variable v);
 extern void get_val(char *key, Variable *v);
+extern bool val_exists_in_symtab(char *key);
 
 extern void get_vector_elem(char *vector_name, int idx, Variable *dst);
 extern void get_matrix_elem(char *matrix_name, int row, int col, Variable *dst);
 extern void get_id_vector_elem(char *vector_name, char *vector_idx_name, Variable *res);
 extern void get_id_matrix_elem(char *matrix_name, char *row_idx_name, char *col_idx_name, Variable *dst);
+
+extern float get_val_float(Variable var);
+extern int get_val_int(Variable var);
 
 #endif

@@ -2,6 +2,7 @@
     #include "types.h"
     #include "arithmetic_ops.h"
     #include "bool_ops.h"
+    #include "code_generation.h"
 }
 
 %{
@@ -76,40 +77,11 @@
 %%
 prog : sentence_list;
 sentence_list : sentence_list sentence ENTER | sentence_list ENTER | %empty;
-sentence : assignation_sentence | expression {print_var("Expression", $1, out);};
+sentence : assignation_sentence | expression {/*print_var("Expression", $1, out);*/};
 assignation_sentence : ID EQUALS expression {
-    Variable v;
-    v.var_name = $1.var_name;
-    v.type = $3.type;
-    switch(v.type) {
-        case Int64:
-            v.val.Int64 = $3.val.Int64;
-            break;
-        case Float64:
-            v.val.Float64 = $3.val.Float64;
-            break;
-        case String:
-            v.val.String = $3.val.String;
-            break;
-        case Bool:
-            v.val.Bool = $3.val.Bool;
-            break;
-        case Int64Vector:
-            v.val.Int64Vector = $3.val.Int64Vector;
-            break;
-        case Float64Vector:
-            v.val.Float64Vector = $3.val.Float64Vector;
-            break;
-        case Int64Matrix:
-            v.val.Int64Matrix = $3.val.Int64Matrix;
-            break;
-        case Float64Matrix:
-            v.val.Float64Matrix = $3.val.Float64Matrix;
-            break;
-        default:
-            yyerror("Unknown type\n");
-    }
-    store_val(v, out);
+    emet_assignation($1, $3, out);
+
+
 };
 
 
@@ -120,30 +92,39 @@ expression : add_list{$$ = $1;};
 add_list : add_list ARITHMETIC_ADD mult_list {
     if(DEBUG) printf("add\n");
 
-    do_add($1, $3, &$$);
+    if(is_literal($1) && is_literal($3)) do_add($1, $3, &$$);
+    else emet_add($1, $3, &$$);
 } | add_list ARITHMETIC_SUB mult_list {
     if(DEBUG) printf("sub\n");
 
-    do_sub($1, $3, &$$);
+    if(is_literal($1) && is_literal($3)) do_sub($1, $3, &$$);
+    else emet_sub($1, $3, &$$);
 } | mult_list {$$ = $1;}
 
 
 mult_list : mult_list ARITHMETIC_MULT pow_list {
     if(DEBUG) printf("mult\n");
 
-    do_mult($1, $3, &$$);
+    if(is_literal($1) && is_literal($3)) do_mult($1, $3, &$$);
+    else emet_mult($1, $3, &$$);
 
 } | mult_list ARITHMETIC_DIV pow_list {
     if(DEBUG) printf("div\n");
 
-    do_div($1, $3, &$$);
+    if(is_literal($1) && is_literal($3)) do_div($1, $3, &$$);
+    else emet_div($1, $3, &$$);
 } | mult_list ARITHMETIC_MOD pow_list {
     if(DEBUG) printf("mod\n");
 
     if(!is_int($1) || !is_int($3)) yyerror("Ilegal type in mod!");
 
-    $$.type = Int64;
-    $$.val.Int64 = $1.val.Int64 % $3.val.Int64;
+    if(is_literal($1) && is_literal($3)) {
+        $$.type = Int64;
+        $$.val.Int64 = $1.val.Int64 % $3.val.Int64;
+    } else {
+        emet_mod($1, $3, &$$);
+    }
+
 } | pow_list { 
     $$ = $1;
 }
@@ -151,8 +132,9 @@ mult_list : mult_list ARITHMETIC_MULT pow_list {
 pow_list : pow_list ARITHMETIC_POW value {
     if(DEBUG) printf("Pow list\n");
     if(!is_int_or_float($1) || !is_int_or_float($3)) yyerror("Ilegal type in pow!");
-
-    do_pow($1, $3, &$$);
+    
+    if(is_literal($1) && is_literal($3)) do_pow($1, $3, &$$);
+    else emet_pow($1, $3, &$$);
 } | value {
     if(DEBUG) printf("expression\n");
     $$ = $1;
@@ -161,16 +143,13 @@ pow_list : pow_list ARITHMETIC_POW value {
 
 
 
-matrix_elem : ID OPEN_M INT COMMA INT CLOSE_M {
-    get_matrix_elem($1.var_name, $3.val.Int64, $5.val.Int64, &$$);
-} | ID OPEN_M ID COMMA ID CLOSE_M {
-    get_id_matrix_elem($1.var_name, $3.var_name, $5.var_name, &$$);
+matrix_elem : ID OPEN_M expression COMMA expression CLOSE_M {
+    emet_matrix_elem($1, $3, $5, &$$);
 };
 
-vector_elem : ID OPEN_M INT CLOSE_M {
-    get_vector_elem($1.var_name, $3.val.Int64, &$$);
-} | ID OPEN_M ID CLOSE_M {
-    get_id_vector_elem($1.var_name, $3.var_name, &$$);
+vector_elem : ID OPEN_M expression CLOSE_M {
+    emet_vector_elem($1, $3, &$$);
+    // get_vector_elem($1.var_name, $3.val.Int64, &$$);
 };
 
 arithmetic_parenthesis : OPEN_P add_list CLOSE_P {$$ = $2;};
@@ -189,17 +168,17 @@ string_expression : STRING {
 };
 
 id_expression : ID {
-    $$.var_name = $1.var_name;
+    $$ = $1;
 };
 
 value : int_expression {$$ = $1;} | float_expression {$$ = $1;} |
             string_expression {$$ = $1;} |
-            id_expression {get_val($1.var_name, &$$);} | m {$$ = $1;} | arithmetic_parenthesis {$$ = $1;} |
+            id_expression {/* get_val($1.var_name, &$$);*/} | m {$$ = $1;} | arithmetic_parenthesis {$$ = $1;} |
             vector_elem{$$ = $1;} | matrix_elem {$$ = $1;} |
-            ARITHMETIC_SUB arithmetic_parenthesis {do_chs($2, &$$);} |
-            ARITHMETIC_SUB id_expression {get_val($2.var_name, &$$); do_chs($$, &$$);} |
-            ARITHMETIC_SUB vector_elem {do_chs($2, &$$);} |
-            ARITHMETIC_SUB matrix_elem {do_chs($2, &$$);};
+            ARITHMETIC_SUB value {
+                if(is_literal($2)) do_chs($2, &$$);
+                else emet_chs($2, &$$);
+            };
 
 
 

@@ -363,8 +363,7 @@ void do_sub(Variable v1, Variable v2, Variable *res) {
 
 //-------------chs-------------
 void do_chs(Variable src, Variable *dst) {
-    dst->type = src.type;
-    dst->var_name = src.var_name;
+    *dst = src;
     switch (src.type) {
         case Int64:
             dst->val.Int64 = -1 * src.val.Int64;
