@@ -78,6 +78,7 @@ void check_variable_existance(Variable *v) {
         if(!val_exists_in_symtab(v->var_name)) printf_error("Undefined variable '%s'", v->var_name);
         get_val(v->var_name, &var);
         v->type = var.type;
+        v->val = var.val;
     }
 }
 
@@ -325,5 +326,60 @@ void emet_vector_elem(Variable v, Variable i, Variable *res) {
 }
 
 void emet_matrix_elem(Variable m, Variable i, Variable j, Variable *res) {
+    check_variable_existance(&m);
+    if(is_variable(i)) check_variable_existance(&i);
+    if(is_variable(j)) check_variable_existance(&j);
+
+    if(!is_int(i)) printf_error("Ilegal type in index '%s' of matrix '%s'", i.var_name, m.var_name);
+    if(!is_int(j)) printf_error("Ilegal type in index '%s' of matrix '%s'", j.var_name, m.var_name);
+
+    res->type = is_int_matrix(m) ? Int64 : Float64;
+
+    if(is_variable(i) && !is_variable(j)) {
+        Variable i_cols;
+        generate_tmp(&i_cols);
+        emet("%s := %s MULI %i", i_cols.var_name, i.var_name, get_matrix_cols(m));
+
+        Variable mla;
+        generate_tmp(&mla);
+        emet("%s := %s ADDI %i", mla.var_name, i_cols.var_name, get_val_int(j));
+
+        Variable idx;
+        generate_tmp(&idx);
+        emet("%s := %s MULI 4", idx.var_name, mla.var_name);
+
+        generate_tmp(res);
+        emet("%s := %s[%s]", res->var_name, m.var_name, idx.var_name);
+    } else if(!is_variable(i) && is_variable(j)) {
+        Variable mla;
+        generate_tmp(&mla);
+        emet("%s := %i ADDI %s", mla.var_name, get_val_int(i) * get_matrix_cols(m), j.var_name);
+
+        Variable idx;
+        generate_tmp(&idx);
+        emet("%s := %s MULI 4", idx.var_name, mla.var_name);
+
+        generate_tmp(res);
+        emet("%s := %s[%s]", res->var_name, m.var_name, idx.var_name);
+
+    } else if(is_variable(i) && is_variable(j)) {
+        Variable i_cols;
+        generate_tmp(&i_cols);
+        emet("%s := %s MULI %i", i_cols.var_name, i.var_name, get_matrix_cols(m));
+
+        Variable mla;
+        generate_tmp(&mla);
+        emet("%s := %s ADDI %s", mla.var_name, i_cols.var_name, j.var_name);
+
+        Variable idx;
+        generate_tmp(&idx);
+        emet("%s := %s MULI 4", idx.var_name, mla.var_name);
+
+        generate_tmp(res);
+        emet("%s := %s[%s]", res->var_name, m.var_name, idx.var_name);
+    } else {
+        generate_tmp(res);
+        emet("%s := %s[%i]", res->var_name, m.var_name, (get_val_int(i) * get_matrix_cols(m) + get_val_int(j)) * 4);
+    }
 
 }
