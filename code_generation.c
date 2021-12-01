@@ -300,9 +300,28 @@ void emet_assignation(Variable v1, Variable v2, FILE *f) {
     else emet_simple(v1, v2);
 }
 
-//-------------Emet vector and matrix-------------
+//-------------Emet vector and matrix elem-------------
 void emet_vector_elem(Variable v, Variable i, Variable *res) {
+    check_variable_existance(&v);
+    if(!is_vector(v)) printf_error("Trying to acces to a vector element in a ilegal type!");
 
+    if(is_variable(i)) check_variable_existance(&i);
+
+    if(!is_int(i)) printf_error("Ilegal type in index '%s' of vector '%s'",i.var_name, v.var_name);
+
+    res->type = is_int_vector(v) ? Int64 : Float64;
+
+    if(is_variable(i)) {
+        Variable idx;
+        generate_tmp(&idx);
+        emet("%s := %s MULI 4", idx.var_name, i.var_name);
+        generate_tmp(res);
+        emet("%s := %s[%s]", res->var_name, v.var_name, idx.var_name);
+
+    } else {
+        generate_tmp(res);
+        emet("%s := %s[%i]", res->var_name, v.var_name, get_val_int(i) * 4);
+    }
 }
 
 void emet_matrix_elem(Variable m, Variable i, Variable j, Variable *res) {
