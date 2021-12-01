@@ -102,6 +102,10 @@ int get_var_string_len(Variable v) {
     }
 }
 
+int get_vector_len(Variable v) {return v.type == Int64Vector ? v.val.Int64Vector.n_elem : v.val.Float64Vector.n_elem;}
+
+int get_matrix_rows(Variable v) {return v.type == Int64Matrix ? v.val.Int64Matrix.n_rows : v.val.Int64Matrix.n_rows;}
+int get_matrix_cols(Variable v) {return v.type == Int64Matrix ? v.val.Int64Matrix.n_cols : v.val.Int64Matrix.n_cols;}
 
 //-------------Prints-------------
 void print_matrix(Variable v) {
@@ -275,7 +279,7 @@ void store_val(Variable var) {
 
 void get_val(char *key, Variable *v) {
     int ret = sym_lookup(key, v);
-    if(ret != SYMTAB_OK) symtab_error_handle("loockup in show val!", ret);
+    if(ret != SYMTAB_OK) symtab_error_handle("loockup in get val!", ret);
 }
 
 void show_val(char *key, FILE *out) {

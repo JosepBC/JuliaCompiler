@@ -80,8 +80,6 @@ sentence_list : sentence_list sentence ENTER | sentence_list ENTER | %empty;
 sentence : assignation_sentence | expression {/*print_var("Expression", $1, out);*/};
 assignation_sentence : ID EQUALS expression {
     emet_assignation($1, $3, out);
-
-
 };
 
 

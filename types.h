@@ -58,6 +58,7 @@ extern bool is_float_vector(Variable v);
 extern bool is_int_matrix(Variable v);
 extern bool is_float_matrix(Variable v);
 extern bool is_vector(Variable v);
+extern bool is_matrix(Variable v);
 extern bool is_string(Variable v);
 extern bool is_bool(Variable v);
 extern bool is_literal(Variable v);
@@ -71,9 +72,16 @@ extern void print_node_row(NodeRow *row);
 extern void store_matrix(NodeRow *row, Variable *var);
 extern void print_var(char* str, Variable var, FILE *out);
 
+extern void print_matrix(Variable v);
+extern void print_vector(Variable v);
+
 extern int get_var_string_len(Variable v);
 extern void get_val(char *key, Variable *v);
 extern bool val_exists_in_symtab(char *key);
+extern int get_vector_len(Variable v);
+
+extern int get_matrix_rows(Variable v);
+extern int get_matrix_cols(Variable v);
 
 extern void get_vector_elem(char *vector_name, int idx, Variable *dst);
 extern void get_matrix_elem(char *matrix_name, int row, int col, Variable *dst);

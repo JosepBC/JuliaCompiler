@@ -22,7 +22,7 @@ void emet(char *str, ...) {
 
 void generate_tmp(Variable *v) {
     v->var_name = (char*) malloc(12 * sizeof(char));
-    v->var_name_len = 12;
+    v->var_name_len = 13;
     v->is_variable = true;
     sprintf(v->var_name, "$t%i", tmp_count++);
 }
@@ -30,7 +30,6 @@ void generate_tmp(Variable *v) {
 char* var_to_string(Variable v, char *str, int size) {
     if(v.is_variable) {
         strncpy(str, v.var_name, size);
-        str[size - 1] = 0;
     } else {
         switch(v.type) {
             case Int64:
@@ -50,71 +49,61 @@ char* var_to_string(Variable v, char *str, int size) {
         }
     }
 
+    str[size - 1] = 0;
     return str;
 }
 
 char* var_to_string_idx(Variable v, char *str, int size, int idx) {
     if(is_int_or_float(v)) error("Extra index");
 
-    if(v.is_variable) {
-        strncpy(str, v.var_name, size);
-        str[size - 1] = 0;
-    } else {
-        switch(v.type) {
-            case Int64Vector:
-            case Float64Vector:
-            case Int64Matrix:
-            case Float64Matrix:
-                snprintf(str, size, "%s[%i]", v.var_name, idx);
-                break;
-            default:
-                error("Unknown type\n");
-        }
+    switch(v.type) {
+        case Int64Vector:
+        case Float64Vector:
+        case Int64Matrix:
+        case Float64Matrix:
+            snprintf(str, size, "%s[%i]", v.var_name, idx);
+            break;
+        default:
+            printf_error("Unknown type %i", v.type);
     }
 
+    str[size - 1] = 0;
     return str;
 }
 
 void check_variable_existance(Variable *v) {
     Variable var;
     if(v->is_variable) {
-        if(v->var_name[0] != '$' && !val_exists_in_symtab(v->var_name)) printf_error("Undefined variable '%s'", v->var_name);
+        if(v->var_name[0] == '$') return;
+        if(!val_exists_in_symtab(v->var_name)) printf_error("Undefined variable '%s'", v->var_name);
         get_val(v->var_name, &var);
         v->type = var.type;
     }
 }
 
-//-------------Type change-------------
-void to_int(Variable v, Variable *res) {
-    if(is_literal(v)) {
-        *res = v;
-        res->type = Int64;
-        res->val.Int64 = get_val_int(v);
-        return;
-    }
-
-    generate_tmp(res);
-
-    res->type = Int64;
-    res->is_variable = v.is_variable;
-    res->var_name_len = 12;
-    if(!res->is_variable) printf("Sould be done in compile time");
-
+char* get_string_elem(Variable v, int idx, char *str) {
     switch (v.type) {
-        case Int64:
-            *res = v;
+        case Int64Vector:
+            if(idx >= v.val.Int64Vector.n_elem) printf_error("Index [%i] out of bounds", idx);
+            snprintf(str, 12, "%i", v.val.Int64Vector.v[idx]);
             break;
-
-        case Float64:
-            emet("%s := F2I %s", res->var_name, v.var_name);
+        case Float64Vector:
+            if(idx >= v.val.Float64Vector.n_elem) printf_error("Index [%i] out of bounds", idx);
+            snprintf(str, 12, "%f", v.val.Float64Vector.v[idx]);
             break;
-            
-        default:
-            printf_error("Ilegal type in to int when converting variable '%s' to int", v.var_name);
+        case Int64Matrix:
+            snprintf(str, 12, "%i", v.val.Int64Matrix.m[idx]);
+            break;
+        case Float64Matrix:
+            snprintf(str, 12, "%f", v.val.Float64Matrix.m[idx]);
             break;
     }
+
+    str[11] = 0;
+    return str;
 }
 
+//-------------Type change-------------
 void to_float(Variable v, Variable *res) {
     if(is_literal(v)) {
         *res = v;
@@ -123,19 +112,15 @@ void to_float(Variable v, Variable *res) {
         return;
     }
 
-    generate_tmp(res);
-
-    res->type = Float64;
-    res->var_name_len = 12;
-    res->is_variable = v.is_variable;
-    if(!res->is_variable) printf("Sould be done in compile time");
-
     switch (v.type) {
         case Float64:
             *res = v;
             break;
 
         case Int64:
+            generate_tmp(res);
+
+            res->type = Float64;
             emet("%s := I2F %s", res->var_name, v.var_name);
             break;
             
@@ -156,7 +141,7 @@ void general_arithmetic_emet(Variable v1, Variable v2, Variable *res, char op[4]
     if(is_float(v1) || is_float(v2)) res->type = Float64;
     else res->type = Int64;
 
-    if(is_literal(v1) && is_literal(v2)) printf("Emet %s: Sould be done in compile time", op);
+    if(is_literal(v1) && is_literal(v2)) printf("Emet %s: Sould be done in compile time\n", op);
 
     if(is_float(*res)) {
         to_float(v1, &v1);
@@ -181,7 +166,7 @@ void emet_pow(Variable v1, Variable v2, Variable *res) {
     if(!is_int_or_float(v1) || !is_int(v2)) error("Ilegal type in pow");
 
 
-    if(is_literal(v1) && is_literal(v2)) printf("Emet pow: Sould be done in compile time");
+    if(is_literal(v1) && is_literal(v2)) printf("Emet pow: Sould be done in compile time\n");
 
     //i = 0
     Variable idx;
@@ -198,11 +183,6 @@ void emet_pow(Variable v1, Variable v2, Variable *res) {
 
     int goto_line = line_number;
 
-
-    
-
-
-
     int v1_len = get_var_string_len(v1);
 
     char *v1_str = (char*) malloc(v1_len * sizeof(char));
@@ -216,10 +196,6 @@ void emet_pow(Variable v1, Variable v2, Variable *res) {
     char *v2_str = (char*) malloc(v2_len * sizeof(char));
 
     emet("IF %s LTI %s GOTO %i", idx.var_name, var_to_string(v2, v2_str, v2_len), goto_line);
-
-
-
-
 }
 
 void emet_mod(Variable v1, Variable v2, Variable *res) {
@@ -254,11 +230,58 @@ void emet_chs(Variable v, Variable *res) {
 
     char *str = (char*) malloc(v_len * sizeof(char));
 
-    emet("%s := CHS%c %s", res->var_name, is_int(*res) ? 'I' : 'F',var_to_string(v, str, v_len));
+    emet("%s := CHS%c %s", res->var_name, is_int(*res) ? 'I' : 'F', var_to_string(v, str, v_len));
 }
 
 //-------------Emet assignation v1 = v2-------------
-void emet_assignation(Variable v1, Variable v2, FILE *f) {
+void emet_assignation_vector(Variable v1, Variable v2) {
+    v1.type = v2.type;
+    v1.val = v2.val;
+    v1.is_variable = true;
+
+    int v2_len = get_vector_len(v2);
+
+    int var_len = get_var_string_len(v1);
+    char *var_name = (char*) malloc(var_len * sizeof(char));
+
+    char *str = (char*) malloc(12 * sizeof(char));
+
+    for(int i = 0; i < v2_len; i++) {
+        emet("%s := %s", var_to_string_idx(v1, var_name, 12, i * 4), get_string_elem(v2, i, str));
+    }
+
+    store_val(v1);
+
+    free(var_name);
+    free(str);
+}
+
+void emet_assignation_matrix(Variable v1, Variable v2) {
+    v1.type = v2.type;
+    v1.val = v2.val;
+    v1.is_variable = true;
+
+    int mtx_rows = get_matrix_rows(v2);
+    int mtx_cols = get_matrix_cols(v2);
+
+    int var_len = get_var_string_len(v1);
+    char *var_name = (char*) malloc(var_len * sizeof(char));
+
+    char *str = (char*) malloc(12 * sizeof(char));
+
+    for(int i = 0; i < mtx_cols; i++) {
+        for(int j = 0; j < mtx_cols; j++) {
+            emet("%s := %s", var_to_string_idx(v1, var_name, 12, (i * mtx_cols + j) * 4), get_string_elem(v2, (i * mtx_cols + j), str));
+        }
+    }
+
+    store_val(v1);
+
+    free(var_name);
+    free(str);
+}
+
+void emet_simple(Variable v1, Variable v2) {
     int v2_len = get_var_string_len(v2);
     char *v2_str = (char*) malloc(v2_len * sizeof(char));
     emet("%s := %s", v1.var_name, var_to_string(v2, v2_str, v2_len));
@@ -269,6 +292,12 @@ void emet_assignation(Variable v1, Variable v2, FILE *f) {
     v1.var_name_len = v2.var_name_len;
 
     store_val(v1);
+}
+
+void emet_assignation(Variable v1, Variable v2, FILE *f) {
+    if(is_matrix(v2)) emet_assignation_matrix(v1, v2);
+    else if(is_vector(v2)) emet_assignation_vector(v1, v2);
+    else emet_simple(v1, v2);
 }
 
 //-------------Emet vector and matrix-------------
