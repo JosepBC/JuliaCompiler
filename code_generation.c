@@ -131,7 +131,7 @@ void to_float(Variable v, Variable *res) {
             break;
             
         default:
-            printf_error("Ilegal type in to float when converting variable '%s' to float", v.var_name);
+            printf_error("Ilegal type in to float when converting to float. Variable '%s' has type '%s' and should be 'Int64' or 'Float64'", v.var_name, fancy_print_type(v.type));
             break;
     }
 }
@@ -142,7 +142,8 @@ void general_arithmetic_emet(Variable v1, Variable v2, Variable *res, char op[4]
     check_variable_existance(&v1);
     check_variable_existance(&v2);
 
-    if(!is_int_or_float(v1) || !is_int_or_float(v2)) printf_error("Ilegal type in %s", op);
+    if(!is_int_or_float(v1)) printf_error("Ilegal type '%s' in '%s'", fancy_print_type(v1.type), op);
+    if(!is_int_or_float(v2)) printf_error("Ilegal type '%s' in '%s'", fancy_print_type(v2.type), op);
     
     if(is_float(v1) || is_float(v2)) res->type = Float64;
     else res->type = Int64;
@@ -167,9 +168,10 @@ void general_arithmetic_emet(Variable v1, Variable v2, Variable *res, char op[4]
 void emet_pow(Variable v1, Variable v2, Variable *res) {
     check_variable_existance(&v1);
     check_variable_existance(&v2);
-    if(is_float(v2)) printf_error("Ilegal exponent type in pow %f ^ %f", get_val_float(v1), get_val_float(v2));
+    if(is_float(v2)) printf_error("Ilegal exponent type 'Float64' in pow %f ^ %f", get_val_float(v1), get_val_float(v2));
 
-    if(!is_int_or_float(v1) || !is_int(v2)) error("Ilegal type in pow");
+    if(!is_int_or_float(v1)) printf_error("Ilegal type '%s' in pow", fancy_print_type(v1.type));
+    if(!is_int(v2)) printf_error("Ilegal type '%s' in pow", fancy_print_type(v2.type));
 
 
     if(is_literal(v1) && is_literal(v2)) printf("Emet pow: Sould be done in compile time\n");
@@ -227,7 +229,7 @@ void emet_add(Variable v1, Variable v2, Variable *res) {
 void emet_chs(Variable v, Variable *res) {
     check_variable_existance(&v);
 
-    if(!is_int_or_float(v)) error("Ilegal type in chs");
+    if(!is_int_or_float(v)) printf_error("Ilegal type '%s' in chs", fancy_print_type(v.type));
 
     generate_tmp(res);
 
@@ -310,11 +312,11 @@ void emet_assignation(Variable v1, Variable v2, FILE *f) {
 //-------------Emet vector and matrix elem-------------
 void emet_vector_elem(Variable v, Variable i, Variable *res) {
     check_variable_existance(&v);
-    if(!is_vector(v)) printf_error("Trying to acces to a vector element in a ilegal type!");
+    if(!is_vector(v)) printf_error("Ilegal operator on type '%s'", fancy_print_type(v.type));
 
     if(is_variable(i)) check_variable_existance(&i);
 
-    if(!is_int(i)) printf_error("Ilegal type in index '%s' of vector '%s'",i.var_name, v.var_name);
+    if(!is_int(i)) printf_error("Ilegal type '%s' in index '%s' of vector '%s'", fancy_print_type(i.type), i.var_name, v.var_name);
 
     res->type = is_int_vector(v) ? Int64 : Float64;
 
@@ -336,8 +338,8 @@ void emet_matrix_elem(Variable m, Variable i, Variable j, Variable *res) {
     if(is_variable(i)) check_variable_existance(&i);
     if(is_variable(j)) check_variable_existance(&j);
 
-    if(!is_int(i)) printf_error("Ilegal type in index '%s' of matrix '%s'", i.var_name, m.var_name);
-    if(!is_int(j)) printf_error("Ilegal type in index '%s' of matrix '%s'", j.var_name, m.var_name);
+    if(!is_int(i)) printf_error("Ilegal type '%s' in index '%s' of matrix '%s'", fancy_print_type(i.type), i.var_name, m.var_name);
+    if(!is_int(j)) printf_error("Ilegal type '%s' in index '%s' of matrix '%s'", fancy_print_type(j.type), j.var_name, m.var_name);
 
     res->type = is_int_matrix(m) ? Int64 : Float64;
 
@@ -393,7 +395,7 @@ void emet_matrix_elem(Variable m, Variable i, Variable j, Variable *res) {
 
 //-------------Emet prints------------
 void emet_print_simple(Variable v) {
-    if(!is_int_or_float(v)) printf_error("Ilegal type in emet print simple");
+    if(!is_int_or_float(v)) printf_error("Ilegal type '%s' in emet print simple", fancy_print_type(v.type));
 
     if(!is_variable(v)) v.var_name = (char*) malloc(get_var_string_len(v) * sizeof(char));
 
@@ -403,7 +405,7 @@ void emet_print_simple(Variable v) {
 }
 
 void emet_print_vector(Variable v) {
-    if(!is_vector(v)) printf_error("Ilegal type in emet vector");
+    if(!is_vector(v)) printf_error("Ilegal type '%s' in emet vector", fancy_print_type(v.type));
 
     if(!is_variable(v)) {
         generate_tmp(&v);
@@ -417,7 +419,7 @@ void emet_print_vector(Variable v) {
 }
 
 void emet_print_matrix(Variable v) {
-    if(!is_matrix(v)) printf_error("Ilegal type in emet matrix");
+    if(!is_matrix(v)) printf_error("Ilegal type '%s' in emet matrix", fancy_print_type(v.type));
 
     if(!is_variable(v)) {
         generate_tmp(&v);
