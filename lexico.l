@@ -225,6 +225,7 @@ int_vector_t            Vector\{Int64\}
 
 {f} {
     if(DEBUG) printf("[FLEX Debug] Float64 %s\n", yytext);
+    yylval.var.var_name = "";
     yylval.var.val.Float64 = atof(yytext);
     yylval.var.is_variable = false;
     yylval.var.type = Float64;

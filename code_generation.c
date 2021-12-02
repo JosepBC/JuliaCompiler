@@ -77,7 +77,14 @@ void check_variable_existance(Variable *v) {
         if(v->var_name[0] == '$') return;
         if(!val_exists_in_symtab(v->var_name)) printf_error("Undefined variable '%s'", v->var_name);
         get_val(v->var_name, &var);
-        v->type = var.type;
+
+        if(is_function(var)){
+            Variable tmp;
+            generate_tmp(&tmp);
+            emet_function_assignation(tmp, var);
+            v->var_name = tmp.var_name;
+        } else v->type = var.type;
+
         v->val = var.val;
     }
 }
@@ -108,6 +115,7 @@ void reset_numbers() {
     tmp_count = 1;
     line_number = 1;
 }
+
 
 //-------------Type change-------------
 void to_float(Variable v, Variable *res) {
@@ -142,8 +150,8 @@ void general_arithmetic_emet(Variable v1, Variable v2, Variable *res, char op[4]
     check_variable_existance(&v1);
     check_variable_existance(&v2);
 
-    if(!is_int_or_float(v1)) printf_error("Ilegal type '%s' in '%s'", fancy_print_type(v1.type), op);
-    if(!is_int_or_float(v2)) printf_error("Ilegal type '%s' in '%s'", fancy_print_type(v2.type), op);
+    if(!is_int_or_float(v1)) printf_error("Ilegal type '%s' in '%s' op 1", fancy_print_type(v1.type), op);
+    if(!is_int_or_float(v2)) printf_error("Ilegal type '%s' in '%s' op 2", fancy_print_type(v2.type), op);
     
     if(is_float(v1) || is_float(v2)) res->type = Float64;
     else res->type = Int64;
@@ -242,6 +250,12 @@ void emet_chs(Variable v, Variable *res) {
 
 
 //-------------Emet assignation v1 = v2-------------
+void emet_function_assignation(Variable v1, Variable v2) {
+    v1.type = v2.val.Function.return_type;
+    v1.is_variable = true;
+    emet("%s := CALL %s,%i", v1.var_name, v2.var_name, v2.val.Function.n_args);
+}
+
 void emet_assignation_vector(Variable v1, Variable v2) {
     v1.type = v2.type;
     v1.val = v2.val;
@@ -305,6 +319,8 @@ void emet_simple(Variable v1, Variable v2) {
 void emet_assignation(Variable v1, Variable v2, FILE *f) {
     if(is_matrix(v2)) emet_assignation_matrix(v1, v2);
     else if(is_vector(v2)) emet_assignation_vector(v1, v2);
+    else if(is_function(v2)) emet_function_assignation(v1, v2);
+    else if(is_action(v2)) printf_error("Can't assign result of action");
     else emet_simple(v1, v2);
 }
 
@@ -433,6 +449,14 @@ void emet_print_matrix(Variable v) {
     emet("CALL PUTM%c,3", is_int_matrix(v) ? 'I' : 'F');
 }
 
+void emet_print_function(Variable v) {
+    Variable tmp;
+    generate_tmp(&tmp);
+    tmp.type = v.val.Function.return_type;
+    emet("%s := CALL %s,%i", tmp.var_name, v.var_name, v.val.Function.n_args);
+    emet_print_var(tmp);
+}
+
 void emet_print_var(Variable v) {
     check_variable_existance(&v);
 
@@ -449,9 +473,13 @@ void emet_print_var(Variable v) {
         case Float64Vector:
             emet_print_vector(v);
             break;
+        case Function:
+            emet_print_function(v);
+            break;
     }
 
 }
+
 
 //-------------Emet functions-------------
 void emet_end_main() {
@@ -490,3 +518,46 @@ void emet_return(Variable v) {
     emet("RETURN %s", var_to_string(v, v.var_name, get_var_string_len(v)));
 }
 
+void function_call_emet(char *foo_name, CallArgList *args, Variable *foo) {
+    if(!val_exists_in_symtab(foo_name)) printf_error("Function '%s' is not declared", foo_name);
+
+    get_val(foo_name, foo);
+
+    if(!is_function_or_action(*foo)) printf_error("'%s' is not a funtion or action, is a '%s'", foo_name, fancy_print_type(foo->type));
+
+    int n_args = is_function(*foo) ? foo->val.Function.n_args : foo->val.Action.n_args;
+    int n_call_args = args == NULL ? 0 : args->n_args;
+
+    if(n_args != n_call_args) printf_error("Function '%s' has '%i' args but call has '%i'", foo_name, n_args, n_call_args);
+
+    int i = 0;
+    Arg *foo_args = is_function(*foo) ? foo->val.Function.args : foo->val.Action.args;
+
+    while(args != NULL) {
+        Type definition_type = foo_args[i++].type;
+        Type call_type = args->arg.type;
+
+        if(call_type != definition_type) printf_error("Error, arg '%i' must be '%s' but is '%s'", i, fancy_print_type(definition_type), fancy_print_type(definition_type));
+
+        Variable v = args->arg;
+        check_variable_existance(&v);
+
+        if(!is_variable(v)) {
+            generate_tmp(&v);
+            v.is_variable = false;
+            emet_assignation(v, v, NULL);
+        }
+
+        emet("PARAM %s", v.var_name);
+
+
+        if(DEBUG) printf("Call arg '%i' of type '%s'\n", i, fancy_print_type(call_type));
+        args = args->next;
+    }
+
+
+    if(is_action(*foo)){
+        emet("CALL %s,%i", foo_name, n_args);
+    }
+
+}

@@ -27,6 +27,7 @@
     NodeCol *nc;
     Type t;
     ArgList *args;
+    CallArgList *call_args;
 };
 
 %token<var> ID
@@ -94,6 +95,12 @@
 %type<args> non_empty_param_list;
 %type<args> param;
 
+%type<call_args> param_call_list;
+%type<call_args> non_empty_param_call_list;
+%type<call_args> param_call;
+
+%type<var> function_call;
+
 %%
 prog : function_list start sentence_list {emet_end_main();};
 function_list : non_empty_function_list ENTER | %empty;
@@ -105,6 +112,33 @@ assignation_sentence : ID EQUALS expression {
     emet_assignation($1, $3, out);
 };
 
+param_call : expression {
+    $$ = (CallArgList*) malloc(sizeof(CallArgList));
+    $$->arg = $1;
+    $$->n_args = 1;
+    $$->next = NULL;
+    if(DEBUG) printf("Param call '%s' of type '%s'\n", $1.var_name, fancy_print_type($1.type));
+};
+
+non_empty_param_call_list : param_call COMMA non_empty_param_call_list {
+    $$ = (CallArgList*) malloc(sizeof(CallArgList));
+    $$->arg = $1->arg;
+    $$->next = $3;
+    $$->n_args = $1->n_args + 1;
+} | param_call {$$ = $1;};
+
+param_call_list : non_empty_param_call_list {$$ = $1;} | %empty {$$ = NULL;};
+
+function_call : ID OPEN_P param_call_list CLOSE_P {
+    function_call_emet($1.var_name, $3, &$$);
+    if(DEBUG) printf("Function call to '%s'\n", $1.var_name);
+    if(is_function($$)) {
+        $$.type = $$.val.Function.return_type;
+        $$.is_variable = true;
+    }
+};
+
+
 type : INT_T {$$ = $1;} | FLOAT_T {$$ = $1;} |
         INT_MATRIX_T {$$ = $1;} | FLOAT_MATRIX_T {$$ = $1;} |
         INT_VECTOR_T {$$ = $1;} | FLOAT_VECTOR_T {$$ = $1;};
@@ -115,7 +149,7 @@ param : ID DOUBLE_COLON type {
     $$->arg.type = $3;
     $$->n_args = 1;
     $$->next = NULL;
-    // printf("Param %s of type %i\n", $1.var_name, (int)$3);
+    if(DEBUG) printf("Header param '%s' of type '%s'\n", $1.var_name, fancy_print_type($3));
 };
 
 non_empty_param_list : param COMMA non_empty_param_list {
@@ -141,6 +175,7 @@ function_signature : header OPEN_P param_list CLOSE_P DOUBLE_COLON type {
 
     push_symtab();
 
+    store_args_symtab($$);
     store_return_type($6);
 };
 
@@ -153,6 +188,8 @@ action_signature : header OPEN_P param_list CLOSE_P {
 
     store_val($$);
     push_symtab();
+
+    store_args_symtab($$);
 };
 
 header : FOO ID {
@@ -267,6 +304,7 @@ value : int_expression {$$ = $1;} | float_expression {$$ = $1;} |
             string_expression {$$ = $1;} |
             id_expression {/* get_val($1.var_name, &$$);*/} | m {$$ = $1;} | arithmetic_parenthesis {$$ = $1;} |
             vector_elem{$$ = $1;} | matrix_elem {$$ = $1;} |
+            function_call {$$ = $1;} |
             ARITHMETIC_SUB value {
                 if(is_literal($2)) do_chs($2, &$$);
                 else emet_chs($2, &$$);

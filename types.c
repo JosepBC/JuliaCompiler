@@ -83,6 +83,11 @@ bool is_literal(Variable v) {return !v.is_variable;}
 
 bool is_variable(Variable v) {return v.is_variable;}
 
+bool is_function(Variable v) {return v.type == Function;}
+
+bool is_action(Variable v) {return v.type == Action;}
+
+bool is_function_or_action(Variable v) {return is_function(v) || is_action(v);}
 
 //-------------Val getters-------------
 int get_val_int(Variable var) {
@@ -332,6 +337,21 @@ void get_return_type(Type *t) {
     *t = v.type;
 }
 
+void store_args_symtab(Variable v) {
+    int n_args = is_function(v) ? v.val.Function.n_args : v.val.Action.n_args;
+    Arg *args = is_function(v) ? v.val.Function.args : v.val.Action.args;
+
+    for(int i = 0; i < n_args; i++) {
+        Variable v;
+        v.type = args[i].type;
+        v.var_name = args[i].name;
+        v.is_variable = true;
+        v.var_name_len = strlen(v.var_name);
+
+        store_val(v);
+    }
+}
+
 
 //-------------Get matrix, vector elems-------------
 void get_id_matrix_elem(char *matrix_name, char *row_idx_name, char *col_idx_name, Variable *dst) {
@@ -433,6 +453,7 @@ void store_matrix(NodeRow *row, Variable *var) {
     else error("Ilegal type in matrix!");
 
     var->is_variable = false;
+    var->var_name = "";
     NodeRow *r = row;
     switch (var->type) {
         case Int64Matrix: {

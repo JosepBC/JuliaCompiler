@@ -17,7 +17,6 @@ typedef struct Arg_list_t {
     int n_args;
 } ArgList;
 
-
 typedef struct Variable_t {
     Type type;
     char *var_name;
@@ -72,6 +71,12 @@ typedef struct Node_row_t {
     Type row_type;
 } NodeRow;
 
+typedef struct Call_arg_list_t {
+    Variable arg;
+    struct Call_arg_list_t *next;
+    int n_args;
+} CallArgList;
+
 extern bool is_int_or_float(Variable v1);
 extern bool is_int(Variable v);
 extern bool is_float(Variable v);
@@ -85,6 +90,10 @@ extern bool is_string(Variable v);
 extern bool is_bool(Variable v);
 extern bool is_literal(Variable v);
 extern bool is_variable(Variable v);
+extern bool is_action(Variable v);
+extern bool is_function(Variable v);
+extern bool is_function_or_action(Variable v);
+
 extern void error(char *str);
 extern void printf_error(char *str, ...);
 extern const char* fancy_print_type(Type v);
@@ -106,6 +115,7 @@ extern void push_symtab();
 extern void pop_symtab();
 extern void store_return_type(Type t);
 extern void get_return_type(Type *t);
+extern void store_args_symtab(Variable v);
 
 extern int get_vector_len(Variable v);
 
