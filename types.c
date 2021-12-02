@@ -285,7 +285,7 @@ void crop_first_last_elem(char **str) {
 //-------------Symtab store, get-------------
 void store_val(Variable var) {
     int ret = sym_enter(var.var_name, &var);
-    if(ret != SYMTAB_OK) symtab_error_handle("storing value in symtab in store_val!", ret);
+    if(ret != SYMTAB_OK && ret != SYMTAB_DUPLICATE) symtab_error_handle("storing value in symtab in store_val!", ret);
 }
 
 void get_val(char *key, Variable *v) {
