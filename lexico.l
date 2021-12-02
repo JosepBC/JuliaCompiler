@@ -45,12 +45,12 @@ foo                     function
 end                     end
 ret                     return
 double_colon            ::
-int_t                   Int64
-float_t                 Float64
-float_matrix_t          Matrix\{Float64\}
-int_matrix_t            Matrix\{Int64\}
-float_vector_t          Vector\{Float64\}
-int_vector_t            Vector\{Int64\}
+int_t                   Int32
+float_t                 Float32
+float_matrix_t          Matrix\{Float32\}
+int_matrix_t            Matrix\{Int32\}
+float_vector_t          Vector\{Float32\}
+int_vector_t            Vector\{Int32\}
 %%
 {comma} {
     return COMMA;
