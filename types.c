@@ -83,6 +83,7 @@ bool is_literal(Variable v) {return !v.is_variable;}
 
 bool is_variable(Variable v) {return v.is_variable;}
 
+
 //-------------Val getters-------------
 int get_val_int(Variable var) {
     return var.type == Int64 ? var.val.Int64 : var.val.Float64;
@@ -107,7 +108,22 @@ int get_vector_len(Variable v) {return v.type == Int64Vector ? v.val.Int64Vector
 int get_matrix_rows(Variable v) {return v.type == Int64Matrix ? v.val.Int64Matrix.n_rows : v.val.Int64Matrix.n_rows;}
 int get_matrix_cols(Variable v) {return v.type == Int64Matrix ? v.val.Int64Matrix.n_cols : v.val.Int64Matrix.n_cols;}
 
+
 //-------------Prints-------------
+const char* fancy_print_type(Type v) {
+    switch (v){
+        case Unknown: return "Unknown";
+        case Int64: return "Int64";
+        case Float64: return "Float64";
+        case Int64Vector: return "Vector{Int64}";
+        case Int64Matrix: return "Matrix{Int64}";
+        case Float64Vector: return "Vector{Float64}";
+        case Float64Matrix: return "Matrix{Float64}";
+        case Function: return "Function";
+        case Action: return "Action";
+    }
+}
+
 void print_matrix(Variable v) {
     switch (v.type) {
         case Int64Matrix:
@@ -268,12 +284,7 @@ void crop_first_last_elem(char **str) {
 
 //-------------Symtab store, get-------------
 void store_val(Variable var) {
-    int ret = sym_add(var.var_name, &var);
-    if(ret == SYMTAB_DUPLICATE) {
-        ret = sym_remove(var.var_name);
-        if(ret != SYMTAB_OK) symtab_error_handle("removing the var to store new val in store_val!", ret);
-        ret = sym_add(var.var_name, &var);
-    }
+    int ret = sym_enter(var.var_name, &var);
     if(ret != SYMTAB_OK) symtab_error_handle("storing value in symtab in store_val!", ret);
 }
 
@@ -293,6 +304,34 @@ bool val_exists_in_symtab(char *key) {
     Variable v;
     return sym_lookup(key, &v) == SYMTAB_OK;
 }
+
+void check_function_existance(char *name) {
+    if(val_exists_in_symtab(name)) printf_error("Function '%s' already exists!", name);
+}
+
+void push_symtab() {
+    int ret = sym_push_scope();
+    if(ret != SYMTAB_OK) symtab_error_handle("in push symtab", ret);
+}
+
+void pop_symtab() {
+    int ret = sym_pop_scope();
+    if(ret != SYMTAB_OK) symtab_error_handle("in pop symtab", ret);
+}
+
+void store_return_type(Type t) {
+    Variable v;
+    v.var_name = "$t0";
+    v.type = t;
+    store_val(v);
+}
+
+void get_return_type(Type *t) {
+    Variable v;
+    get_val("$t0", &v);
+    *t = v.type;
+}
+
 
 //-------------Get matrix, vector elems-------------
 void get_id_matrix_elem(char *matrix_name, char *row_idx_name, char *col_idx_name, Variable *dst) {
@@ -457,5 +496,36 @@ void store_matrix(NodeRow *row, Variable *var) {
             var->val.Float64 = r->val->val.val.Float64;
             break;
     
+    }
+}
+
+
+//-------------Args treatment-------------
+void store_args(ArgList *linked_args, Arg **args, int *n_args) {
+    if(linked_args == NULL) {
+        if(DEBUG) printf("Empty args\n");
+        *n_args = 0;
+        *args = NULL;
+        return;
+    }
+
+    *n_args = linked_args->n_args;
+    *args = (Arg*) malloc(*n_args * sizeof(Arg));
+
+    ArgList* arg_list = linked_args;
+    int i = 0;
+    while(arg_list != NULL) {
+        (*args)[i++] = arg_list->arg;
+        if(DEBUG) printf("Dynamic arg '%s' of type '%i'\n", arg_list->arg.name, (int)arg_list->arg.type);
+        arg_list = arg_list->next;
+    }
+}
+
+void print_args(Variable v) {
+    int n_elem = v.type == Function ? v.val.Function.n_args : v.val.Action.n_args;
+    Arg *args = v.type == Function ? v.val.Function.args : v.val.Action.args;
+
+    for(int i = 0; i < n_elem; i++) {
+        printf("Stored arg '%s' of type %i\n", args[i].name, args[i].type);
     }
 }

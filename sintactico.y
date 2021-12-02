@@ -25,6 +25,8 @@
     char *str;
     NodeRow *nr;
     NodeCol *nc;
+    Type t;
+    ArgList *args;
 };
 
 %token<var> ID
@@ -55,6 +57,16 @@
 %token OPEN_P
 %token CLOSE_P
 %token COMMA
+%token FOO
+%token END
+%token DOUBLE_COLON
+%token<t> INT_T
+%token<t> FLOAT_T
+%token<t> INT_MATRIX_T
+%token<t> FLOAT_MATRIX_T
+%token<t> INT_VECTOR_T
+%token<t> FLOAT_VECTOR_T
+%token RETURN
 
 %type<var> int_expression;
 %type<var> float_expression;
@@ -73,16 +85,97 @@
 %type<var> arithmetic_parenthesis;
 %type<var> vector_elem;
 %type<var> matrix_elem;
+%type<var> function_signature;
+%type<var> action_signature;
+%type<var> header;
+%type<t> type;
+
+%type<args> param_list;
+%type<args> non_empty_param_list;
+%type<args> param;
 
 %%
-prog : start sentence_list {emet_end_main();};
-start : %empty {emet_start_main();};
+prog : function_list start sentence_list {emet_end_main();};
+function_list : non_empty_function_list ENTER | %empty;
+non_empty_function_list : non_empty_function_list ENTER function | function;
+start : %empty {emet_start_foo("main");};
 sentence_list : sentence_list sentence ENTER | sentence_list ENTER | %empty;
 sentence : assignation_sentence | expression {emet_print_var($1);};
 assignation_sentence : ID EQUALS expression {
     emet_assignation($1, $3, out);
 };
 
+type : INT_T {$$ = $1;} | FLOAT_T {$$ = $1;} |
+        INT_MATRIX_T {$$ = $1;} | FLOAT_MATRIX_T {$$ = $1;} |
+        INT_VECTOR_T {$$ = $1;} | FLOAT_VECTOR_T {$$ = $1;};
+
+param : ID DOUBLE_COLON type {
+    $$ = (ArgList*) malloc(sizeof(ArgList));
+    $$->arg.name = strdup($1.var_name);
+    $$->arg.type = $3;
+    $$->n_args = 1;
+    $$->next = NULL;
+    // printf("Param %s of type %i\n", $1.var_name, (int)$3);
+};
+
+non_empty_param_list : param COMMA non_empty_param_list {
+    $$ = (ArgList*) malloc(sizeof(ArgList));
+    $$->arg = $1->arg;
+    $$->next = $3;
+    $$->n_args = $1->n_args + 1;
+} | param {$$ = $1;};
+
+param_list : non_empty_param_list {$$ = $1;} | %empty {$$ = NULL;};
+
+function_signature : header OPEN_P param_list CLOSE_P DOUBLE_COLON type {
+    $$.type = Function;
+    $$.var_name = $1.var_name;
+
+    store_args($3, &$$.val.Function.args, &$$.val.Function.n_args);
+    if(DEBUG) print_args($$);
+
+    $$.val.Function.return_type = $6;
+    if(DEBUG) printf("Return of type %i\n", (int)$6);
+
+    store_val($$);
+
+    push_symtab();
+
+    store_return_type($6);
+};
+
+action_signature : header OPEN_P param_list CLOSE_P {
+    $$.type = Action;
+    $$.var_name = $1.var_name;
+
+    store_args($3, &$$.val.Action.args, &$$.val.Action.n_args);
+    if(DEBUG) print_args($$);
+
+    store_val($$);
+    push_symtab();
+};
+
+header : FOO ID {
+    check_function_existance($2.var_name);
+    $$ = $2;
+    emet_start_foo($2.var_name);
+};
+
+function_sentence_list : sentence_list RETURN expression {
+    emet_return($3);
+};
+
+action_sentence_list : sentence_list RETURN ENTER | sentence_list;
+
+
+function : function_signature ENTER function_sentence_list ENTER END {
+    emet_end_foo();
+    pop_symtab();
+} | action_signature ENTER action_sentence_list END {
+    emet_action_return();
+    emet_end_foo();
+    pop_symtab();
+};
 
 expression : add_list{$$ = $1;};
 

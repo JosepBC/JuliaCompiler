@@ -12,7 +12,7 @@ letterDigit             [a-zA-Z0-9]
 f                       {digit}+([.]{digit}+)?(e-?{digit}+)?
 string                  \".*\"
 i                       {digit}+
-enter                   \n
+enter                   \n+
 equal                   =
 b                       (true|false)
 id                      {letter}+(_?{letterDigit}+)*
@@ -41,6 +41,16 @@ add                     \+
 open_p                  \(
 close_p                 \)
 comma                   ,
+foo                     function
+end                     end
+ret                     return
+double_colon            ::
+int_t                   Int64
+float_t                 Float64
+float_matrix_t          Matrix\{Float64\}
+int_matrix_t            Matrix\{Int64\}
+float_vector_t          Vector\{Float64\}
+int_vector_t            Vector\{Int64\}
 %%
 {comma} {
     return COMMA;
@@ -137,6 +147,54 @@ comma                   ,
     yylval.var.is_variable = false;
     yylval.var.type = Bool;
     return BOOL;
+}
+
+{ret} {
+    return RETURN;
+}
+
+{int_matrix_t} {
+    yylval.t = Int64Matrix;
+    return INT_MATRIX_T;
+}
+
+{float_matrix_t} {
+    yylval.t = Float64Matrix;
+    return FLOAT_MATRIX_T;
+}
+
+{int_vector_t} {
+    yylval.t = Int64Vector;
+    return INT_VECTOR_T;
+}
+
+{float_vector_t} {
+    yylval.t = Float64Vector;
+    return FLOAT_VECTOR_T;
+}
+
+{int_t} {
+    yylval.t = Int64;
+    return INT_T;
+}
+
+{float_t} {
+    yylval.t = Float64;
+    return FLOAT_T;
+}
+
+{foo} {
+    if(DEBUG) printf("Function\n");
+    return FOO;
+}
+
+{end} {
+    if(DEBUG) printf("foo end\n");
+    return END;
+}
+
+{double_colon} {
+    return DOUBLE_COLON;
 }
 
 {string} {

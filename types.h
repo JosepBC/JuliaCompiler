@@ -4,7 +4,20 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-typedef enum Type_t {Unknown, Int64, Float64, String, Bool, Int64Vector, Float64Vector, Int64Matrix, Float64Matrix} Type;
+typedef enum Type_t {Unknown, Int64, Float64, String, Bool, Int64Vector, Float64Vector, Int64Matrix, Float64Matrix, Function, Action} Type;
+
+typedef struct Arg_t {
+    char *name;
+    Type type;
+} Arg;
+
+typedef struct Arg_list_t {
+    Arg arg;
+    struct Arg_list_t *next;
+    int n_args;
+} ArgList;
+
+
 typedef struct Variable_t {
     Type type;
     char *var_name;
@@ -33,6 +46,15 @@ typedef struct Variable_t {
             int n_rows;
             int n_cols;
         } Float64Matrix;
+        struct Function {
+            Arg *args;
+            int n_args;
+            Type return_type;
+        } Function;
+        struct Action {
+            Arg *args;
+            int n_args;
+        } Action;
     } val;
 } Variable;
 
@@ -65,6 +87,7 @@ extern bool is_literal(Variable v);
 extern bool is_variable(Variable v);
 extern void error(char *str);
 extern void printf_error(char *str, ...);
+extern const char* fancy_print_type(Type v);
 
 extern void store_val(Variable var);
 extern void crop_first_last_elem(char **str);
@@ -78,6 +101,12 @@ extern void print_vector(Variable v);
 extern int get_var_string_len(Variable v);
 extern void get_val(char *key, Variable *v);
 extern bool val_exists_in_symtab(char *key);
+extern void check_function_existance(char *name);
+extern void push_symtab();
+extern void pop_symtab();
+extern void store_return_type(Type t);
+extern void get_return_type(Type *t);
+
 extern int get_vector_len(Variable v);
 
 extern int get_matrix_rows(Variable v);
@@ -91,4 +120,6 @@ extern void get_id_matrix_elem(char *matrix_name, char *row_idx_name, char *col_
 extern float get_val_float(Variable var);
 extern int get_val_int(Variable var);
 
+extern void store_args(ArgList *linked_args, Arg **args, int *n_args);
+extern void print_args(Variable v);
 #endif

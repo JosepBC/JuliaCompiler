@@ -104,17 +104,10 @@ char* get_string_elem(Variable v, int idx, char *str) {
     return str;
 }
 
-void emet_start_main() {
+void reset_numbers() {
     tmp_count = 1;
     line_number = 1;
-    emet("START main");
 }
-
-void emet_end_main() {
-    emet("HALT");
-    emet("END");
-}
-
 
 //-------------Type change-------------
 void to_float(Variable v, Variable *res) {
@@ -457,3 +450,41 @@ void emet_print_var(Variable v) {
     }
 
 }
+
+//-------------Emet functions-------------
+void emet_end_main() {
+    emet("HALT");
+    emet("END");
+}
+
+void emet_start_foo(char *foo_name) {
+    reset_numbers();
+    emet("START %s", foo_name);
+}
+
+void emet_end_foo() {
+    emet("END");
+    printf("\n");
+}
+
+void emet_action_return() {
+    emet("RETURN");
+}
+
+void emet_return(Variable v) {
+    if(!is_variable(v)) v.var_name = (char*) malloc(get_var_string_len(v) * sizeof(char));
+    check_variable_existance(&v);
+    Type ret_type;
+    get_return_type(&ret_type);
+
+    if(ret_type != v.type) printf_error("Ilegal type in return, type is '%s' and should be '%s'", fancy_print_type(v.type), fancy_print_type(ret_type));
+
+    if(!is_variable(v) && (is_matrix(v) || is_vector(v))) {
+        generate_tmp(&v);
+        if(is_matrix(v)) emet_assignation_matrix(v, v);
+        if(is_vector(v)) emet_assignation_vector(v, v);
+    }
+
+    emet("RETURN %s", var_to_string(v, v.var_name, get_var_string_len(v)));
+}
+
