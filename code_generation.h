@@ -19,4 +19,6 @@ extern void emet_assignation(Variable v1, Variable v2, FILE *f);
 extern void emet_vector_elem(Variable v, Variable i, Variable *res);
 extern void emet_matrix_elem(Variable m, Variable i, Variable j, Variable *res);
 
+extern void emet_print_var(Variable v);
+
 #endif

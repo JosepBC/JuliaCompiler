@@ -6,8 +6,8 @@
 
 #include "code_generation.h"
 
-int tmp_count = 0;
-int line_number = 0;
+int tmp_count = 1;
+int line_number = 1;
 
 //-------------General foos-------------
 void emet(char *str, ...) {
@@ -288,7 +288,7 @@ void emet_simple(Variable v1, Variable v2) {
     emet("%s := %s", v1.var_name, var_to_string(v2, v2_str, v2_len));
     
     v1.type = v2.type;
-    v1.is_variable = v2.is_variable;
+    v1.is_variable = true;
     v1.val = v2.val;
     v1.var_name_len = v2.var_name_len;
 
@@ -380,6 +380,66 @@ void emet_matrix_elem(Variable m, Variable i, Variable j, Variable *res) {
     } else {
         generate_tmp(res);
         emet("%s := %s[%i]", res->var_name, m.var_name, (get_val_int(i) * get_matrix_cols(m) + get_val_int(j)) * 4);
+    }
+
+}
+
+//-------------Emet prints------------
+void emet_print_simple(Variable v) {
+    if(!is_int_or_float(v)) printf_error("Ilegal type in emet print simple");
+
+    if(!is_variable(v)) v.var_name = (char*) malloc(get_var_string_len(v) * sizeof(char));
+
+    emet("PARAM %s", var_to_string(v, v.var_name, get_var_string_len(v)));
+
+    emet("CALL PUT%c,1", is_int(v) ? 'I' : 'F');
+}
+
+void emet_print_vector(Variable v) {
+    if(!is_vector(v)) printf_error("Ilegal type in emet vector");
+
+    if(!is_variable(v)) {
+        generate_tmp(&v);
+        emet_assignation_vector(v, v);
+    }
+
+    emet("PARAM %s", v.var_name);
+    emet("PARAM %i", get_vector_len(v));
+
+    emet("CALL PUTV%c,2", is_int_vector(v) ? 'I' : 'F');
+}
+
+void emet_print_matrix(Variable v) {
+    if(!is_matrix(v)) printf_error("Ilegal type in emet matrix");
+
+    if(!is_variable(v)) {
+        generate_tmp(&v);
+        emet_assignation_matrix(v, v);
+    }
+
+    emet("PARAM %s", v.var_name);
+    emet("PARAM %i", get_matrix_rows(v));
+    emet("PARAM %i", get_matrix_cols(v));
+
+    emet("CALL PUTM%c,2", is_int_matrix(v) ? 'I' : 'F');
+}
+
+void emet_print_var(Variable v) {
+    check_variable_existance(&v);
+
+    switch (v.type) {
+        case Int64:
+        case Float64:
+            emet_print_simple(v);
+            break;
+        case Int64Matrix:
+        case Float64Matrix:
+            emet_print_matrix(v);
+            break;
+        case Int64Vector:
+        case Float64Vector:
+            emet_print_vector(v);
+            break;
     }
 
 }

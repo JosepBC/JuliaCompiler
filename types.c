@@ -393,7 +393,7 @@ void store_matrix(NodeRow *row, Variable *var) {
     else if(row->row_type == Float64) var->type = Float64Matrix;
     else error("Ilegal type in matrix!");
 
-
+    var->is_variable = false;
     NodeRow *r = row;
     switch (var->type) {
         case Int64Matrix: {
