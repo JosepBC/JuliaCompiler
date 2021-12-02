@@ -104,6 +104,18 @@ char* get_string_elem(Variable v, int idx, char *str) {
     return str;
 }
 
+void emet_start_main() {
+    tmp_count = 1;
+    line_number = 1;
+    emet("START main");
+}
+
+void emet_end_main() {
+    emet("HALT");
+    emet("END");
+}
+
+
 //-------------Type change-------------
 void to_float(Variable v, Variable *res) {
     if(is_literal(v)) {
@@ -219,7 +231,6 @@ void emet_add(Variable v1, Variable v2, Variable *res) {
     general_arithmetic_emet(v1, v2, res, "ADD");
 }
 
-
 void emet_chs(Variable v, Variable *res) {
     check_variable_existance(&v);
 
@@ -233,6 +244,7 @@ void emet_chs(Variable v, Variable *res) {
 
     emet("%s := CHS%c %s", res->var_name, is_int(*res) ? 'I' : 'F', var_to_string(v, str, v_len));
 }
+
 
 //-------------Emet assignation v1 = v2-------------
 void emet_assignation_vector(Variable v1, Variable v2) {
@@ -300,6 +312,7 @@ void emet_assignation(Variable v1, Variable v2, FILE *f) {
     else if(is_vector(v2)) emet_assignation_vector(v1, v2);
     else emet_simple(v1, v2);
 }
+
 
 //-------------Emet vector and matrix elem-------------
 void emet_vector_elem(Variable v, Variable i, Variable *res) {
@@ -383,6 +396,7 @@ void emet_matrix_elem(Variable m, Variable i, Variable j, Variable *res) {
     }
 
 }
+
 
 //-------------Emet prints------------
 void emet_print_simple(Variable v) {

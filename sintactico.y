@@ -75,7 +75,8 @@
 %type<var> matrix_elem;
 
 %%
-prog : sentence_list;
+prog : start sentence_list {emet_end_main();};
+start : %empty {emet_start_main();};
 sentence_list : sentence_list sentence ENTER | sentence_list ENTER | %empty;
 sentence : assignation_sentence | expression {emet_print_var($1);};
 assignation_sentence : ID EQUALS expression {

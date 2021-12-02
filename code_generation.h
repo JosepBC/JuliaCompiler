@@ -21,4 +21,7 @@ extern void emet_matrix_elem(Variable m, Variable i, Variable j, Variable *res);
 
 extern void emet_print_var(Variable v);
 
+extern void emet_start_main();
+extern void emet_end_main();
+
 #endif
