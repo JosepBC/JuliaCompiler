@@ -421,7 +421,7 @@ void emet_print_matrix(Variable v) {
     emet("PARAM %i", get_matrix_rows(v));
     emet("PARAM %i", get_matrix_cols(v));
 
-    emet("CALL PUTM%c,2", is_int_matrix(v) ? 'I' : 'F');
+    emet("CALL PUTM%c,3", is_int_matrix(v) ? 'I' : 'F');
 }
 
 void emet_print_var(Variable v) {
