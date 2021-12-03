@@ -1,17 +1,15 @@
-ten = 10
-eleven = 11
-sum = ten + eleven
-d = ten * eleven
-c = 2 * (ten + eleven)
-e = true && false
-#=Multi line
-comment
-=#
-vector = [10;20;30]
-mtx = [10 20;20 40]
-elem = vector[0]
-elem = mtx[0, 1]
-v2 = 2 * vector
-e = ten > eleven || true
-(ten + ten) >= 20
-#comment
+function swap(v::Vector{Int32})
+    temp = v[0]
+    v[0] = v[1]
+    v[1] = temp
+    end
+
+function mean(a::Float32, b::Float32)::Float32
+    return (a + b) / 2
+end
+
+v = [1; 2; 3; 4]
+swap(v)
+x = 10.0 + 7.0
+i = 0
+z = x + mean(x - 7, v[3 + i] * 3.5)

@@ -1,15 +1,37 @@
-Int64 ten = 10
-Int64 eleven = 11
-Int64 sum = 21
-Int64 d = 110
-Int64 c = 42
-Bool e = false
-Int64Vector vector = 10 20 30 
-Int64Matrix mtx = 
-10 20 
-20 40 
-Int64 elem = 10
-Int64 elem = 20
-Int64Vector v2 = 20 40 60 
-Bool e = true
-Bool ten = true
+1: START swap
+2: $t1 := v[0]
+3: temp := $t1
+4: $t2 := v[4]
+5: v[0] := $t2
+6: v[4] := temp
+7: RETURN
+8: END
+
+1: START mean
+2: $t1 := a ADDF b
+3: $t2 := $t1 DIVF 2.000000
+4: RETURN $t2
+5: END
+
+1: START main
+2: v[0] := 1
+3: v[4] := 2
+4: v[8] := 3
+5: v[12] := 4
+6: PARAM v
+7: CALL swap,1
+8: x := 17.000000
+9: i := 0
+10: $t1 := x SUBF 7.000000
+11: $t2 := 3 ADDI i
+12: $t3 := $t2 MULI 4
+13: $t4 := v[$t3]
+14: $t5 := I2F $t4
+15: $t6 := $t5 MULF 3.500000
+16: PARAM $t1
+17: PARAM $t6
+18: $t7 := CALL mean,2
+19: $t8 := x ADDF $t7
+20: z := $t8
+21: HALT
+22: END
