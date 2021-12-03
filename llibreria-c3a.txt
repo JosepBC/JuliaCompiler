@@ -1,0 +1,64 @@
+1: START PUTVI
+2: $t1 := 0 #i
+3: $t2 := $t1 MULI 4
+4: $t3 := v[$t2]
+5: PARAM $t3
+6: CALL PUTI,1
+7: $t4 := ' ' 
+8: PARAM $t4
+9: CALL PUTC,1
+10: $t1 := $t1 ADDI 1
+11: IF $t1 LTI size GOTO 3
+12: RETURN
+13: END
+
+
+1: START PUTVF
+2: $t1 := 0 #i
+3: $t2 := $t1 MULI 4
+4: $t3 := v[$t2]
+5: PARAM $t3
+6: CALL PUTF,1
+7: $t4 := ' ' 
+8: PARAM $t4
+9: CALL PUTC,1
+10: $t1 := $t1 ADDI 1
+11: IF $t1 LTI size GOTO 3
+12: RETURN
+13: END
+
+
+1: START PUTMI
+2: $t1 := 0 #i
+3: $t2 := 0 #j
+4: $t3 := $t1 MULI cols
+5: $t4 := $t3 ADDI $t2
+6: $t4 := $t4 MULI 4
+7: $t5 := m[$t4]
+8: PARAM $t5
+9: CALL PUTI,1
+10: $t2 := $t2 ADDI 1
+11: IF $t2 LTI cols GOTO 4
+12: $t6 := '\n'
+13: PARAM $t6
+14: CALL PUTC,1
+15: $t1 := $t1 ADDI 1
+16: IF $t1 LTI rows GOTO 4
+
+
+1: START PUTMF
+2: $t1 := 0 #i
+3: $t2 := 0 #j
+4: $t3 := $t1 MULI cols
+5: $t4 := $t3 ADDI $t2
+6: $t4 := $t4 MULI 4
+7: $t5 := m[$t4]
+8: PARAM $t5
+9: CALL PUTF,1
+10: $t2 := $t2 ADDI 1
+11: IF $t2 LTI cols GOTO 4
+12: $t6 := '\n'
+13: PARAM $t6
+14: CALL PUTC,1
+15: $t1 := $t1 ADDI 1
+16: IF $t1 LTI rows GOTO 4
