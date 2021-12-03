@@ -8,16 +8,23 @@
 
 int tmp_count = 1;
 int line_number = 1;
+FILE *out_file = NULL;
 
 //-------------General foos-------------
-void emet(char *str, ...) {
-   va_list args;
+void set_out_file(FILE *f) {
+    out_file = f;
+}
 
-   va_start(args, str);
-   printf("%i: ", line_number++);
-   vprintf(str, args);
-   printf("\n");
-   va_end(args);
+void emet(char *str, ...) {
+    if(out_file == NULL) printf_error("Out file is null can't emet code");
+
+    va_list args;
+
+    va_start(args, str);
+    fprintf(out_file, "%i: ", line_number++);
+    vfprintf(out_file, str, args);
+    fprintf(out_file, "\n");
+    va_end(args);
 }
 
 void generate_tmp(Variable *v) {
@@ -399,7 +406,7 @@ void emet_simple(Variable v1, Variable v2) {
     store_val(v1);
 }
 
-void emet_assignation(Variable v1, Variable v2, FILE *f) {
+void emet_assignation(Variable v1, Variable v2) {
     if(is_matrix(v2)) emet_assignation_matrix(v1, v2);
     else if(is_vector(v2)) emet_assignation_vector(v1, v2);
     else if(is_function(v2)) emet_function_assignation(v1, v2);
@@ -577,7 +584,7 @@ void emet_start_foo(char *foo_name) {
 
 void emet_end_foo() {
     emet("END");
-    printf("\n");
+    fprintf(out_file, "\n");
 }
 
 void emet_action_return() {
@@ -619,8 +626,7 @@ void function_call_emet(char *foo_name, CallArgList *args, Variable *foo) {
     while(args != NULL) {
         Type definition_type = foo_args[i++].type;
         Type call_type = args->arg.type;
-
-        if(call_type != definition_type) printf_error("Error, arg '%i' must be '%s' but is '%s'", i, fancy_print_type(definition_type), fancy_print_type(definition_type));
+        if(call_type != definition_type) printf_error("Error, arg '%i' must be '%s' but is '%s'", i, fancy_print_type(definition_type), fancy_print_type(call_type));
 
         Variable v = args->arg;
         check_variable_existance(&v);
@@ -628,7 +634,7 @@ void function_call_emet(char *foo_name, CallArgList *args, Variable *foo) {
         if(!is_variable(v)) {
             generate_tmp(&v);
             v.is_variable = false;
-            emet_assignation(v, v, NULL);
+            emet_assignation(v, v);
         }
 
         emet("PARAM %s", v.var_name);

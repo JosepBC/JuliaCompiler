@@ -118,12 +118,12 @@ int get_matrix_cols(Variable v) {return v.type == Int64Matrix ? v.val.Int64Matri
 const char* fancy_print_type(Type v) {
     switch (v){
         case Unknown: return "Unknown";
-        case Int64: return "Int64";
-        case Float64: return "Float64";
-        case Int64Vector: return "Vector{Int64}";
-        case Int64Matrix: return "Matrix{Int64}";
-        case Float64Vector: return "Vector{Float64}";
-        case Float64Matrix: return "Matrix{Float64}";
+        case Int64: return "Int32";
+        case Float64: return "Float32";
+        case Int64Vector: return "Vector{Int32}";
+        case Int64Matrix: return "Matrix{Int32}";
+        case Float64Vector: return "Vector{Float32}";
+        case Float64Matrix: return "Matrix{Float32}";
         case Function: return "Function";
         case Action: return "Action";
     }

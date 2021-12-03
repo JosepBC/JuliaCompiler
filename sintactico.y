@@ -13,7 +13,6 @@
 
     int yylex();
     extern FILE* yyin;
-    FILE* out;
     int yyerror(const char *s);
 %}
 
@@ -109,7 +108,7 @@ start : %empty {emet_start_foo("main");};
 sentence_list : sentence_list sentence ENTER | sentence_list ENTER | %empty;
 sentence : assignation_sentence | expression {emet_print_var($1);};
 assignation_sentence : ID EQUALS expression {
-    emet_assignation($1, $3, out);
+    emet_assignation($1, $3);
 } | ID OPEN_M expression CLOSE_M EQUALS expression {
     emet_vector_elem_assignation($1, $3, $6);
 } | ID OPEN_M expression COMMA expression CLOSE_M EQUALS expression {
@@ -119,6 +118,7 @@ assignation_sentence : ID EQUALS expression {
 
 param_call : expression {
     $$ = (CallArgList*) malloc(sizeof(CallArgList));
+    if(is_variable($1)) check_variable_existance(&$1);
     $$->arg = $1;
     $$->n_args = 1;
     $$->next = NULL;
@@ -372,12 +372,13 @@ int yyerror(const char *s) {
 }
 
 int main(int argc, char **argv) {
-    // yyin = fopen(argv[1], "r");
-    // out = fopen(argv[2], "w");
-    out = stdout;
+    yyin = fopen(argv[1], "r");
+    FILE *out = fopen(argv[2], "w");
+    /* FILE *out = stdout; */
+    set_out_file(out);
     yyparse();
 
-    // fclose(out);
-    // fclose(yyin);
+    fclose(out);
+    fclose(yyin);
     return 1;
 }
