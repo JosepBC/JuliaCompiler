@@ -250,6 +250,89 @@ void emet_chs(Variable v, Variable *res) {
 
 
 //-------------Emet assignation v1 = v2-------------
+
+//v[1] = 10
+void emet_vector_elem_assignation(Variable v1, Variable i, Variable v2) {
+    check_variable_existance(&v1);
+
+    if(!is_vector(v1)) printf_error("Ilegal operator on type '%s'", fancy_print_type(v1.type));
+
+    if(is_variable(i)) check_variable_existance(&i);
+
+    if(!is_int(i)) printf_error("Ilegal type '%s' in index '%s' of vector '%s'", fancy_print_type(i.type), i.var_name, v1.var_name);
+
+    int v2_len = get_var_string_len(v2);
+    char *v2_str = (char*) malloc(v2_len * sizeof(char));
+
+    if(is_variable(i)) {
+        Variable idx;
+        generate_tmp(&idx);
+        emet("%s := %s MULI 4", idx.var_name, i.var_name);
+        emet("%s[%s] := %s", v1.var_name, idx.var_name, var_to_string(v2, v2_str, v2_len));
+
+    } else {
+        emet("%s[%i] := %s", v1.var_name, get_val_int(i) * 4, var_to_string(v2, v2_str, v2_len));
+    }
+}
+
+//m[1,1] = 10
+void emet_matrix_elem_assignation(Variable v1, Variable i, Variable j, Variable v2) {
+    check_variable_existance(&v1);
+
+    if(!is_matrix(v1)) printf_error("Ilegal operator on type '%s'", fancy_print_type(v1.type));
+
+    if(is_variable(i)) check_variable_existance(&i);
+    if(is_variable(j)) check_variable_existance(&j);
+
+    if(!is_int(i)) printf_error("Ilegal type '%s' in index '%s' of vector '%s'", fancy_print_type(i.type), i.var_name, v1.var_name);
+
+    int v2_len = get_var_string_len(v2);
+    char *v2_str = (char*) malloc(v2_len * sizeof(char));
+
+
+    if(is_variable(i) && !is_variable(j)) {
+        Variable i_cols;
+        generate_tmp(&i_cols);
+        emet("%s := %s MULI %i", i_cols.var_name, i.var_name, get_matrix_cols(v1));
+
+        Variable mla;
+        generate_tmp(&mla);
+        emet("%s := %s ADDI %i", mla.var_name, i_cols.var_name, get_val_int(j));
+
+        Variable idx;
+        generate_tmp(&idx);
+        emet("%s := %s MULI 4", idx.var_name, mla.var_name);
+
+        emet("%s[%s] := %s", v1.var_name, idx.var_name, var_to_string(v2, v2_str, v2_len));
+    } else if(!is_variable(i) && is_variable(j)) {
+        Variable mla;
+        generate_tmp(&mla);
+        emet("%s := %i ADDI %s", mla.var_name, get_val_int(i) * get_matrix_cols(v1), j.var_name);
+
+        Variable idx;
+        generate_tmp(&idx);
+        emet("%s := %s MULI 4", idx.var_name, mla.var_name);
+
+        emet("%s[%s] := %s", v1.var_name, idx.var_name, var_to_string(v2, v2_str, v2_len));
+    } else if(is_variable(i) && is_variable(j)) {
+        Variable i_cols;
+        generate_tmp(&i_cols);
+        emet("%s := %s MULI %i", i_cols.var_name, i.var_name, get_matrix_cols(v1));
+
+        Variable mla;
+        generate_tmp(&mla);
+        emet("%s := %s ADDI %s", mla.var_name, i_cols.var_name, j.var_name);
+
+        Variable idx;
+        generate_tmp(&idx);
+        emet("%s := %s MULI 4", idx.var_name, mla.var_name);
+
+        emet("%s[%s] := %s", v1.var_name, idx.var_name, var_to_string(v2, v2_str, v2_len));
+    } else {
+        emet("%s[%i] := %s", v1.var_name, (get_val_int(i) * get_matrix_cols(v1) + get_val_int(j)) * 4, var_to_string(v2, v2_str, v2_len));
+    }
+}
+
 void emet_function_assignation(Variable v1, Variable v2) {
     v1.type = v2.val.Function.return_type;
     v1.is_variable = true;

@@ -14,6 +14,8 @@ extern void emet_sub(Variable v1, Variable v2, Variable *res);
 extern void emet_add(Variable v1, Variable v2, Variable *res);
 extern void emet_chs(Variable v, Variable *res);
 
+extern void emet_vector_elem_assignation(Variable v1, Variable i, Variable v2);
+extern void emet_matrix_elem_assignation(Variable v1, Variable i, Variable j, Variable v2);
 extern void emet_assignation(Variable v1, Variable v2, FILE *f);
 extern void emet_function_assignation(Variable v1, Variable v2);
 

@@ -110,6 +110,11 @@ sentence_list : sentence_list sentence ENTER | sentence_list ENTER | %empty;
 sentence : assignation_sentence | expression {emet_print_var($1);};
 assignation_sentence : ID EQUALS expression {
     emet_assignation($1, $3, out);
+} | ID OPEN_M expression CLOSE_M EQUALS expression {
+    emet_vector_elem_assignation($1, $3, $6);
+} | ID OPEN_M expression COMMA expression CLOSE_M EQUALS expression {
+    emet_matrix_elem_assignation($1, $3, $5, $8);
+
 };
 
 param_call : expression {
@@ -278,7 +283,6 @@ matrix_elem : ID OPEN_M expression COMMA expression CLOSE_M {
 
 vector_elem : ID OPEN_M expression CLOSE_M {
     emet_vector_elem($1, $3, &$$);
-    // get_vector_elem($1.var_name, $3.val.Int64, &$$);
 };
 
 arithmetic_parenthesis : OPEN_P add_list CLOSE_P {$$ = $2;};
