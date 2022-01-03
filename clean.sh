@@ -1,2 +1,2 @@
 #!/bin/sh
-rm *.yy.c *.output *.tab.* julia_compiler
+rm julia_compiler build/*

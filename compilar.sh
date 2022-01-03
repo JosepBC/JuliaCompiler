@@ -1,4 +1,4 @@
 #!/bin/sh
-bison -t -d -v -r all -Wall -Werror sintactico.y
-flex lexico.l
-gcc lex.yy.c sintactico.tab.c symtab.c types.c arithmetic_ops.c code_generation.c -lfl -lm -g -o julia_compiler
+bison -t -d -v -r all -Wall -Werror src/sintactico.y -o build/sintactico.tab.c
+flex -o build/lex.yy.c src/lexico.l
+gcc build/lex.yy.c  build/sintactico.tab.c src/symtab.c src/types.c src/arithmetic_ops.c src/code_generation.c -I include/ -lfl -lm -g -o julia_compiler

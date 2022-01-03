@@ -1,5 +1,3 @@
-*.yy.c 
-*.output 
-*.tab.* 
+build/*
 julia_compiler
 .vscode/*
