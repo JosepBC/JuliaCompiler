@@ -10,6 +10,8 @@ int tmp_count = 1;
 int line_number = 1;
 FILE *out_file = NULL;
 
+InstructionList *generated_instrucitons = NULL;
+
 //-------------General foos-------------
 void set_out_file(FILE *f) {
     out_file = f;
@@ -123,6 +125,115 @@ void reset_numbers() {
     line_number = 1;
 }
 
+
+//-------------Instruction list handle-------------
+void print_instruction_list() {
+    InstructionList *it = generated_instrucitons;
+    int i = 1;
+    while(it != NULL) {
+        printf("%i: %s", i++, it->curr.instr_str);
+        if(it->curr.incomplete_goto) printf(" %i", it->curr.goto_line);
+        printf("\n");
+        it = it->next;
+    }
+}
+
+void insert_instruction(Instruction to_insert) {
+    InstructionList *newNode = (InstructionList*)malloc(sizeof(InstructionList));
+    newNode->curr = to_insert;
+    newNode->next = NULL;
+
+    if(generated_instrucitons == NULL) {
+        generated_instrucitons = newNode;
+    } else {
+        InstructionList *last_node = generated_instrucitons;
+
+        while(last_node->next != NULL) last_node = last_node->next;
+
+        last_node->next = newNode;
+    }
+
+}
+
+/**
+ * @brief Get the n instruction object
+ *
+ * @param instr_idx Number of instruction to return, [1..nElem]
+ * @return InstructionList* Instruction
+ */
+InstructionList *get_n_instruction(int instr_idx) {
+    InstructionList *it = generated_instrucitons;
+    int i = 1;
+
+    while(i < instr_idx && it != NULL) {
+        it = it->next;
+        i++;
+    }
+
+    return it;
+}
+
+/**
+ * @brief Completes the unknown goto lines in 'int_list' with line 'val' in global var of instructions
+ *
+ * @param int_list
+ * @param val
+ */
+void completa(IntList *int_list, int val) {
+    while(int_list != NULL) {
+        InstructionList *instruction = get_n_instruction(int_list->val);
+        if(!instruction->curr.incomplete_goto) printf("WARN INSTRUCTION '%s' ITS NOT AN INCOMPLETE GOTO\n", instruction->curr.instr_str);
+        instruction->curr.goto_line = val;
+        printf("Completed instruction '%s' with goto to line '%i'\n", instruction->curr.instr_str, instruction->curr.goto_line);
+
+        int_list = int_list->next;
+    }
+}
+
+/**
+ * @brief Creates a new list with the elements of l1 and l2 and returns a pointer to its head
+ *
+ * @param l1
+ * @param l2
+ * @return IntList*
+ */
+IntList *fusiona(IntList *l1, IntList *l2) {
+    IntList *last_node = l1;
+
+    while(last_node->next != NULL) {
+        last_node = last_node->next;
+    }
+
+    last_node->next = l2;
+
+    return l1;
+}
+
+void print_int_list(IntList *l) {
+    IntList *it = l;
+    printf("------INTLIST------\n");
+    while(it != NULL) {
+        printf("%i, ", it->val);
+        it = it->next;
+    }
+    printf("\n------END-------\n");
+}
+
+void emet_in_list(bool incomplete_goto, char *fmt, ...) {
+    va_list arglist;
+    char buff[MAXINSTRSIZE];
+
+    va_start(arglist,fmt);
+    vsnprintf(buff, sizeof(buff), fmt, arglist);
+    va_end(arglist);
+    // printf("%s\n", buff);
+
+    Instruction *newInstr = (Instruction*) malloc(sizeof(Instruction));
+    newInstr->instr_str = strdup(buff);
+    newInstr->incomplete_goto = incomplete_goto;
+
+    insert_instruction(*newInstr);
+}
 
 //-------------Type change-------------
 void to_float(Variable v, Variable *res) {

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "types.h"
-
+#define MAXINSTRSIZE 80
 typedef struct Instruction_t {
     char *instr_str;
     bool incomplete_goto;
