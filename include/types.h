@@ -18,9 +18,8 @@ typedef struct Arg_list_t {
 } ArgList;
 
 typedef struct Int_list_t {
-    int e;
+    int val;
     struct Int_list_t *next;
-    int n_elem;
 } IntList;
 
 typedef struct Variable_t {

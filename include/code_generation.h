@@ -7,15 +7,14 @@
 #include "types.h"
 
 typedef struct Instruction_t {
-    char *instr;
+    char *instr_str;
     bool incomplete_goto;
     int goto_line;
 } Instruction;
 
 typedef struct Instruction_list_t {
-    Instruction i;
+    Instruction curr;
     struct Instruction_list_t *next;
-    int n_elem;
 } InstructionList;
 
 extern void set_out_file(FILE *f);
