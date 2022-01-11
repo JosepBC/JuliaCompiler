@@ -17,11 +17,19 @@ typedef struct Arg_list_t {
     int n_args;
 } ArgList;
 
+typedef struct Int_list_t {
+    int e;
+    struct Int_list_t *next;
+    int n_elem;
+} IntList;
+
 typedef struct Variable_t {
     Type type;
     char *var_name;
     int var_name_len;
     bool is_variable;
+    IntList trues;
+    IntList falses;
     union {
         char *String;
         int Int64;

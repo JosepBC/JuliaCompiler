@@ -6,6 +6,18 @@
 #include <stdbool.h>
 #include "types.h"
 
+typedef struct Instruction_t {
+    char *instr;
+    bool incomplete_goto;
+    int goto_line;
+} Instruction;
+
+typedef struct Instruction_list_t {
+    Instruction i;
+    struct Instruction_list_t *next;
+    int n_elem;
+} InstructionList;
+
 extern void set_out_file(FILE *f);
 extern void check_variable_existance(Variable *v);
 
