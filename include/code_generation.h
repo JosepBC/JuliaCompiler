@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include "types.h"
 #define MAXINSTRSIZE 80
+
 typedef struct Instruction_t {
     char *instr_str;
     bool incomplete_goto;
@@ -45,4 +46,6 @@ extern void emet_return(Variable v);
 extern void emet_action_return();
 
 extern void function_call_emet(char *foo_name, CallArgList *args, Variable *foo);
+
+extern IntList *create_int_list(int initial_val);
 #endif

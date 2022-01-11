@@ -219,6 +219,13 @@ void print_int_list(IntList *l) {
     printf("\n------END-------\n");
 }
 
+IntList *create_int_list(int initial_val) {
+    IntList *l = (IntList*) malloc(sizeof(IntList));
+    l->val = initial_val;
+    l->next = NULL;
+    return l;
+}
+
 void emet_in_list(bool incomplete_goto, char *fmt, ...) {
     va_list arglist;
     char buff[MAXINSTRSIZE];
