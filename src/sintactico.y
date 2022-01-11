@@ -89,6 +89,11 @@
 %type<var> action_signature;
 %type<var> header;
 %type<t> type;
+%type<var> or_list;
+%type<var> and_list;
+%type<var> not_list;
+%type<var> relational_list;
+%type<var> boolean_expression;
 
 %type<args> param_list;
 %type<args> non_empty_param_list;
@@ -219,8 +224,33 @@ function : function_signature ENTER function_sentence_list ENTER END {
     pop_symtab();
 };
 
-expression : add_list{$$ = $1;};
+expression : add_list{$$ = $1;} | boolean_expression{$$ = $1;};
 
+
+
+boolean_expression : or_list {$$ = $1;};
+
+or_list: relational_list {$$ = $1;} | or_list BOOL_OR relational_list {
+
+}
+
+relational_list : and_list {$$ = $1;} | value BOOL_HIGHER_THAN value {
+
+} | value BOOL_LOWER_THAN value {
+
+} | value BOOL_HIGHER_EQUAL value {
+
+} | value BOOL_LOWER_EQUAL value {
+
+};
+
+and_list : not_list {$$ = $1;} | and_list BOOL_AND not_list {
+
+}
+
+not_list : BOOL_NOT not_list {
+
+}
 
 
 add_list : add_list ARITHMETIC_ADD mult_list {
