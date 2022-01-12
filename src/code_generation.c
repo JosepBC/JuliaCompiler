@@ -129,9 +129,8 @@ void reset_numbers() {
 //-------------Instruction list handle-------------
 void print_instruction_list() {
     InstructionList *it = generated_instrucitons;
-    int i = 1;
     while(it != NULL) {
-        printf("%i: %s", i++, it->curr.instr_str);
+        printf("%s", it->curr.instr_str);
         if(it->curr.incomplete_goto) printf(" %i", it->curr.goto_line);
         printf("\n");
         it = it->next;
