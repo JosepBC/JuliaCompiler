@@ -27,6 +27,7 @@
     Type t;
     ArgList *args;
     CallArgList *call_args;
+    int sq;
 };
 
 %token<var> ID
@@ -67,6 +68,7 @@
 %token<t> INT_VECTOR_T
 %token<t> FLOAT_VECTOR_T
 %token RETURN
+%token IF
 
 %type<var> int_expression;
 %type<var> float_expression;
@@ -108,13 +110,24 @@
 
 %type<var> function_call;
 
+%type<sq> lambda;
+
+%type<var> sentence_list;
+%type<var> sentence;
+%type<var> assignation_sentence;
+%type<var> simple_conditional_sentence;
+
+
 %%
 prog : function_list start sentence_list {emet_end_main(); print_instruction_list();};
 function_list : non_empty_function_list ENTER | %empty;
 non_empty_function_list : non_empty_function_list ENTER function | function;
 start : %empty {emet_start_foo("main");};
-sentence_list : sentence_list sentence ENTER | sentence_list ENTER | %empty;
-sentence : assignation_sentence | expression {emet_print_var($1);};
+sentence_list : sentence_list lambda sentence ENTER {
+    completa($1.nexts, $2);
+    $$.nexts = $3.nexts;
+} | sentence_list ENTER | %empty {};
+sentence : assignation_sentence | simple_conditional_sentence | expression {emet_print_var($1);};
 assignation_sentence : ID EQUALS expression {
     emet_assignation($1, $3);
 } | ID OPEN_M expression CLOSE_M EQUALS expression {
@@ -227,14 +240,27 @@ function : function_signature ENTER function_sentence_list ENTER END {
     pop_symtab();
 };
 
-expression : add_list{$$ = $1;} | boolean_expression{$$ = $1;};
+expression : add_list {
+    printf("Arithmetic expression\n");
+    $$ = $1;
+};
+
+simple_conditional_sentence : IF boolean_expression ENTER lambda sentence_list END {
+    printf("Simple if\n");
+    completa($2.trues, $4);
+    $$.nexts = fusiona($2.falses, $5.nexts);
+}
 
 boolean_expression : or_list {
     $$ = $1;
 };
 
-or_list : or_list BOOL_OR and_list {
+or_list : or_list BOOL_OR lambda and_list {
     printf("Bool or\n");
+
+    $$.trues = fusiona($1.trues, $4.trues);
+    $$.falses = $4.falses;
+    completa($1.falses, $3);
 
     // if(is_literal($1) && is_literal($3)) do_bool_or($1, $3, &$$);
     // else emet_bool_or($1, $3, &$$);
@@ -242,8 +268,12 @@ or_list : or_list BOOL_OR and_list {
     $$ = $1;
 };
 
-and_list : and_list BOOL_AND bool_equals_list {
+and_list : and_list BOOL_AND lambda bool_equals_list {
     printf("Bool and\n");
+
+    $$.trues = $4.trues;
+    $$.falses = fusiona($1.falses, $4.falses);
+    completa($1.trues, $3);
 
     // if(is_literal($1) && is_literal($3)) do_bool_and($1, $3, &$$);
     // else emet_bool_and($1, $3, &$$);
@@ -255,46 +285,49 @@ bool_equals_list : add_list BOOL_EQUALS add_list {
     printf("Bool equals\n");
 
     // if(is_literal($1) && is_literal($3)) do_bool_equals($1, $3, &$$);
-    // else emet_bool_equals($1, $3, &$$);
+    emet_bool_equals($1, $3, &$$);
 } | add_list BOOL_DIFF add_list {
     printf("Bool diff\n");
 
     // if(is_literal($1) && is_literal($3)) do_bool_diff($1, $3, &$$);
-    // else emet_bool_diff($1, $3, &$$);
-} | not_list {
+    emet_bool_diff($1, $3, &$$);
+} | bool_relational_list {
     $$ = $1;
-};
+}
 
 
 bool_relational_list : add_list BOOL_HIGHER_THAN add_list {
     printf("Higher than\n");
 
-    // if(is_literal($1) && is_literal($3)) do_bool_higher_than($1, $3, &$$);
-    // else emet_bool_higher_than($1, $3, &$$);
+    //if(is_literal($1) && is_literal($3)) do_bool_higher_than($1, $3, &$$);
+    emet_bool_higher_than($1, $3, &$$);
 } | add_list BOOL_LOWER_THAN add_list {
     printf("Lower than\n");
 
-    // if(is_literal($1) && is_literal($3)) do_bool_lower_than($1, $3, &$$);
-    // else emet_bool_lower_than($1, $3, &$$);
+    //if(is_literal($1) && is_literal($3)) do_bool_lower_than($1, $3, &$$);
+    emet_bool_lower_than($1, $3, &$$);
 } | add_list BOOL_HIGHER_EQUAL add_list {
     printf("Higher equal than\n");
 
-    // if(is_literal($1) && is_literal($3)) do_bool_higher_equal($1, $3, &$$);
-    // else emet_bool_higher_equal($1, $3, &$$);
+    //if(is_literal($1) && is_literal($3)) do_bool_higher_equal($1, $3, &$$);
+    emet_bool_higher_equal($1, $3, &$$);
 } | add_list BOOL_LOWER_EQUAL add_list {
     printf("Lower equal than\n");
 
-    // if(is_literal($1) && is_literal($3)) do_bool_lower_equal($1, $3, &$$);
-    // else emet_bool_lower_equal($1, $3, &$$);
+    //if(is_literal($1) && is_literal($3)) do_bool_lower_equal($1, $3, &$$);
+    emet_bool_lower_equal($1, $3, &$$);
+} | not_list {
+    $$ = $1;
 };
 
 not_list : BOOL_NOT not_list {
     printf("Bool not\n");
 
+    $$.trues = $2.falses;
+    $$.falses = $2.trues;
+
     // if(is_literal($2)) do_bool_not($2, &$$);
     // else emet_bool_not($2, &$$);
-} | bool_relational_list {
-    $$ = $1;
 } | bool_value {
     // printf("Bool val\n");
     $$ = $1;
@@ -303,7 +336,20 @@ not_list : BOOL_NOT not_list {
 bool_parenthesis: OPEN_P boolean_expression CLOSE_P {$$ = $2;};
 
 bool_value : bool_parenthesis {$$ = $1;} |
-            BOOL {$$ = $1;};
+            BOOL {
+                $$ = $1;
+
+                if($$.val.Bool) {
+                    $$.trues = create_int_list(get_line_number());
+                    $$.falses = NULL;
+                } else {
+                    $$.trues = NULL;
+                    $$.falses = create_int_list(get_line_number());
+                }
+
+                emet_in_list(true, "GOTO");
+            };
+
 
 
 
@@ -355,7 +401,7 @@ pow_list : pow_list ARITHMETIC_POW value {
     if(is_literal($1) && is_literal($3)) do_pow($1, $3, &$$);
     else emet_pow($1, $3, &$$);
 } | value {
-    if(DEBUG) printf("expression\n");
+    if(DEBUG) printf("expression '%s'\n", $1.var_name);
     $$ = $1;
 }
 
@@ -449,6 +495,10 @@ number : INT {
     $$ = $1;
 };
 
+lambda : %empty {
+    $$ = get_line_number();
+};
+
 %%
 
 int yyerror(const char *s) {
@@ -456,7 +506,7 @@ int yyerror(const char *s) {
     exit(EXIT_FAILURE);
 }
 
-/* #define ENTREGA */
+#define ENTREGA
 int main(int argc, char **argv) {
     FILE *out;
 

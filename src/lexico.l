@@ -5,6 +5,7 @@
     #include <stdio.h>
     #include <string.h>
     #include "types.h"
+    #include "code_generation.h"
 %}
 letter                  [a-zA-Z]
 digit                   [0-9]
@@ -51,7 +52,12 @@ float_matrix_t          Matrix\{Float32\}
 int_matrix_t            Matrix\{Int32\}
 float_vector_t          Vector\{Float32\}
 int_vector_t            Vector\{Int32\}
+if                      if
 %%
+{if} {
+    return IF;
+}
+
 {comma} {
     return COMMA;
 }
