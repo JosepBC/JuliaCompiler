@@ -1,6 +1,6 @@
 #include "bool_ops.h"
 
-//-------------bool ops-------------
+//-------------literal bool ops-------------
 void do_bool_and(Variable a, Variable b, Variable *dst) {
     if(!is_bool(a) || !is_bool(b)) error("Ilegal type in and");
     dst->type = Bool;
@@ -20,7 +20,7 @@ void do_bool_not(Variable a, Variable *dst) {
 }
 
 
-//-------------relational ops-------------
+//-------------literal relational ops-------------
 void do_bool_equals(Variable a, Variable b, Variable *dst) {
     dst->type = Bool;
     if(is_bool(a) && is_bool(b)) {
@@ -121,4 +121,43 @@ void do_bool_lower_equal(Variable a, Variable b, Variable *dst) {
     } else {
         error("Ilegal type in bool lower equal");
     }
+}
+
+
+//-------------NON literal bool ops-------------
+void emet_bool_and(Variable a, Variable b, Variable *dst) {
+
+}
+
+void emet_bool_or(Variable a, Variable b, Variable *dst) {
+
+}
+
+void emet_bool_not(Variable a, Variable *dst) {
+
+}
+
+//-------------NON literal relational ops-------------
+void emet_bool_equals(Variable a, Variable b, Variable *dst) {
+
+}
+
+void emet_bool_diff(Variable a, Variable b, Variable *dst) {
+
+}
+
+void emet_bool_higher_than(Variable a, Variable b, Variable *dst) {
+
+}
+
+void emet_bool_lower_than(Variable a, Variable b, Variable *dst) {
+
+}
+
+void emet_bool_higher_equal(Variable a, Variable b, Variable *dst) {
+
+}
+
+void emet_bool_lower_equal(Variable a, Variable b, Variable *dst) {
+
 }
