@@ -139,8 +139,8 @@ int_vector_t            Vector\{Int32\}
     return BOOL_DIFF;
 }
 
-
 {equal} {return EQUALS;}
+
 {b} {
     if(DEBUG) printf("[FLEX Debug] Bool\n");
     yylval.var.val.Bool = yytext[0] == 't';
