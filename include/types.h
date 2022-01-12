@@ -29,6 +29,7 @@ typedef struct Variable_t {
     bool is_variable;
     IntList *trues;
     IntList *falses;
+    IntList *nexts;
     union {
         char *String;
         int Int64;
