@@ -240,6 +240,11 @@ void emet_in_list(bool incomplete_goto, char *fmt, ...) {
     newInstr->incomplete_goto = incomplete_goto;
 
     insert_instruction(*newInstr);
+    line_number++;
+}
+
+int get_line_number() {
+    return line_number;
 }
 
 //-------------Type change-------------

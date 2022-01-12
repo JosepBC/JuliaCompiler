@@ -48,4 +48,6 @@ extern void emet_action_return();
 extern void function_call_emet(char *foo_name, CallArgList *args, Variable *foo);
 
 extern IntList *create_int_list(int initial_val);
+
+extern int get_line_number();
 #endif
