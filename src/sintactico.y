@@ -235,22 +235,32 @@ boolean_expression : or_list {
 
 or_list : or_list BOOL_OR and_list {
     printf("Bool or\n");
-    // do_bool_or($1, $3, &$$);
+
+    // if(is_literal($1) && is_literal($3)) do_bool_or($1, $3, &$$);
+    // else emet_bool_or($1, $3, &$$);
 } | and_list {
     $$ = $1;
 };
 
 and_list : and_list BOOL_AND bool_equals_list {
-    // do_bool_and($1, $3, &$$);
     printf("Bool and\n");
+
+    // if(is_literal($1) && is_literal($3)) do_bool_and($1, $3, &$$);
+    // else emet_bool_and($1, $3, &$$);
 } | bool_equals_list {
     $$ = $1;
 };
 
-bool_equals_list : not_list BOOL_EQUALS not_list {
-    // do_bool_equals($1, $3, &$$);
-} | not_list BOOL_DIFF not_list {
-    // do_bool_diff($1, $3, &$$);
+bool_equals_list : add_list BOOL_EQUALS add_list {
+    printf("Bool equals\n");
+
+    // if(is_literal($1) && is_literal($3)) do_bool_equals($1, $3, &$$);
+    // else emet_bool_equals($1, $3, &$$);
+} | add_list BOOL_DIFF add_list {
+    printf("Bool diff\n");
+
+    // if(is_literal($1) && is_literal($3)) do_bool_diff($1, $3, &$$);
+    // else emet_bool_diff($1, $3, &$$);
 } | not_list {
     $$ = $1;
 };
@@ -258,21 +268,31 @@ bool_equals_list : not_list BOOL_EQUALS not_list {
 
 bool_relational_list : add_list BOOL_HIGHER_THAN add_list {
     printf("Higher than\n");
-    // do_bool_higher_than($1, $3, &$$);
+
+    // if(is_literal($1) && is_literal($3)) do_bool_higher_than($1, $3, &$$);
+    // else emet_bool_higher_than($1, $3, &$$);
 } | add_list BOOL_LOWER_THAN add_list {
     printf("Lower than\n");
-    // do_bool_lower_than($1, $3, &$$);
+
+    // if(is_literal($1) && is_literal($3)) do_bool_lower_than($1, $3, &$$);
+    // else emet_bool_lower_than($1, $3, &$$);
 } | add_list BOOL_HIGHER_EQUAL add_list {
     printf("Higher equal than\n");
-    // do_bool_higher_equal($1, $3, &$$);
+
+    // if(is_literal($1) && is_literal($3)) do_bool_higher_equal($1, $3, &$$);
+    // else emet_bool_higher_equal($1, $3, &$$);
 } | add_list BOOL_LOWER_EQUAL add_list {
     printf("Lower equal than\n");
-    // do_bool_lower_equal($1, $3, &$$);
+
+    // if(is_literal($1) && is_literal($3)) do_bool_lower_equal($1, $3, &$$);
+    // else emet_bool_lower_equal($1, $3, &$$);
 };
 
 not_list : BOOL_NOT not_list {
-    // do_bool_not($2, &$$);
     printf("Bool not\n");
+
+    // if(is_literal($2)) do_bool_not($2, &$$);
+    // else emet_bool_not($2, &$$);
 } | bool_relational_list {
     $$ = $1;
 } | bool_value {
