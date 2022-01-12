@@ -128,11 +128,13 @@ void reset_numbers() {
 
 //-------------Instruction list handle-------------
 void print_instruction_list() {
+    if(out_file == NULL) printf_error("Can't emet because out file is not seted!");
+
     InstructionList *it = generated_instrucitons;
     while(it != NULL) {
-        printf("%s", it->curr.instr_str);
-        if(it->curr.incomplete_goto) printf(" %i", it->curr.goto_line);
-        printf("\n");
+        fprintf(out_file, "%s", it->curr.instr_str);
+        if(it->curr.incomplete_goto) fprintf(out_file, " %i", it->curr.goto_line);
+        fprintf(out_file, "\n");
         it = it->next;
     }
 }
@@ -264,7 +266,7 @@ void to_float(Variable v, Variable *res) {
             generate_tmp(res);
 
             res->type = Float64;
-            emet("%s := I2F %s", res->var_name, v.var_name);
+            emet_in_list(false, "%s := I2F %s", res->var_name, v.var_name);
             break;
             
         default:
@@ -299,7 +301,7 @@ void general_arithmetic_emet(Variable v1, Variable v2, Variable *res, char op[4]
     char *v2_str = (char*) malloc(v2_len * sizeof(char));
     generate_tmp(res);
 
-    emet("%s := %s %s%c %s", res->var_name, var_to_string(v1, v1_str, v1_len), op, is_int(*res) ? 'I' : 'F', var_to_string(v2, v2_str, v2_len));
+    emet_in_list(false, "%s := %s %s%c %s", res->var_name, var_to_string(v1, v1_str, v1_len), op, is_int(*res) ? 'I' : 'F', var_to_string(v2, v2_str, v2_len));
 }
 
 void emet_pow(Variable v1, Variable v2, Variable *res) {
@@ -316,13 +318,13 @@ void emet_pow(Variable v1, Variable v2, Variable *res) {
     //i = 0
     Variable idx;
     generate_tmp(&idx);
-    emet("%s := 0", idx.var_name);
+    emet_in_list(false, "%s := 0", idx.var_name);
 
     generate_tmp(res);
     
     //Res type = base type
-    if(is_float(v1)) emet("%s := 1.0", res->var_name);
-    else emet("%s := 1", res->var_name);
+    if(is_float(v1)) emet_in_list(false, "%s := 1.0", res->var_name);
+    else emet_in_list(false, "%s := 1", res->var_name);
 
     res->type = v1.type;
 
@@ -332,15 +334,15 @@ void emet_pow(Variable v1, Variable v2, Variable *res) {
 
     char *v1_str = (char*) malloc(v1_len * sizeof(char));
 
-    emet("%s := %s MUL%c %s", res->var_name, res->var_name, is_int(*res) ? 'I' : 'F', var_to_string(v1, v1_str, v1_len));
+    emet_in_list(false, "%s := %s MUL%c %s", res->var_name, res->var_name, is_int(*res) ? 'I' : 'F', var_to_string(v1, v1_str, v1_len));
 
-    emet("%s := %s ADDI 1", idx.var_name, idx.var_name);
+    emet_in_list(false, "%s := %s ADDI 1", idx.var_name, idx.var_name);
 
     int v2_len = get_var_string_len(v2);
 
     char *v2_str = (char*) malloc(v2_len * sizeof(char));
 
-    emet("IF %s LTI %s GOTO %i", idx.var_name, var_to_string(v2, v2_str, v2_len), goto_line);
+    emet_in_list(false, "IF %s LTI %s GOTO %i", idx.var_name, var_to_string(v2, v2_str, v2_len), goto_line);
 }
 
 void emet_mod(Variable v1, Variable v2, Variable *res) {
@@ -374,7 +376,7 @@ void emet_chs(Variable v, Variable *res) {
 
     char *str = (char*) malloc(v_len * sizeof(char));
 
-    emet("%s := CHS%c %s", res->var_name, is_int(*res) ? 'I' : 'F', var_to_string(v, str, v_len));
+    emet_in_list(false, "%s := CHS%c %s", res->var_name, is_int(*res) ? 'I' : 'F', var_to_string(v, str, v_len));
 }
 
 
@@ -396,11 +398,11 @@ void emet_vector_elem_assignation(Variable v1, Variable i, Variable v2) {
     if(is_variable(i)) {
         Variable idx;
         generate_tmp(&idx);
-        emet("%s := %s MULI 4", idx.var_name, i.var_name);
-        emet("%s[%s] := %s", v1.var_name, idx.var_name, var_to_string(v2, v2_str, v2_len));
+        emet_in_list(false, "%s := %s MULI 4", idx.var_name, i.var_name);
+        emet_in_list(false, "%s[%s] := %s", v1.var_name, idx.var_name, var_to_string(v2, v2_str, v2_len));
 
     } else {
-        emet("%s[%i] := %s", v1.var_name, get_val_int(i) * 4, var_to_string(v2, v2_str, v2_len));
+        emet_in_list(false, "%s[%i] := %s", v1.var_name, get_val_int(i) * 4, var_to_string(v2, v2_str, v2_len));
     }
 }
 
@@ -422,50 +424,50 @@ void emet_matrix_elem_assignation(Variable v1, Variable i, Variable j, Variable 
     if(is_variable(i) && !is_variable(j)) {
         Variable i_cols;
         generate_tmp(&i_cols);
-        emet("%s := %s MULI %i", i_cols.var_name, i.var_name, get_matrix_cols(v1));
+        emet_in_list(false, "%s := %s MULI %i", i_cols.var_name, i.var_name, get_matrix_cols(v1));
 
         Variable mla;
         generate_tmp(&mla);
-        emet("%s := %s ADDI %i", mla.var_name, i_cols.var_name, get_val_int(j));
+        emet_in_list(false, "%s := %s ADDI %i", mla.var_name, i_cols.var_name, get_val_int(j));
 
         Variable idx;
         generate_tmp(&idx);
-        emet("%s := %s MULI 4", idx.var_name, mla.var_name);
+        emet_in_list(false, "%s := %s MULI 4", idx.var_name, mla.var_name);
 
-        emet("%s[%s] := %s", v1.var_name, idx.var_name, var_to_string(v2, v2_str, v2_len));
+        emet_in_list(false, "%s[%s] := %s", v1.var_name, idx.var_name, var_to_string(v2, v2_str, v2_len));
     } else if(!is_variable(i) && is_variable(j)) {
         Variable mla;
         generate_tmp(&mla);
-        emet("%s := %i ADDI %s", mla.var_name, get_val_int(i) * get_matrix_cols(v1), j.var_name);
+        emet_in_list(false, "%s := %i ADDI %s", mla.var_name, get_val_int(i) * get_matrix_cols(v1), j.var_name);
 
         Variable idx;
         generate_tmp(&idx);
-        emet("%s := %s MULI 4", idx.var_name, mla.var_name);
+        emet_in_list(false, "%s := %s MULI 4", idx.var_name, mla.var_name);
 
-        emet("%s[%s] := %s", v1.var_name, idx.var_name, var_to_string(v2, v2_str, v2_len));
+        emet_in_list(false, "%s[%s] := %s", v1.var_name, idx.var_name, var_to_string(v2, v2_str, v2_len));
     } else if(is_variable(i) && is_variable(j)) {
         Variable i_cols;
         generate_tmp(&i_cols);
-        emet("%s := %s MULI %i", i_cols.var_name, i.var_name, get_matrix_cols(v1));
+        emet_in_list(false, "%s := %s MULI %i", i_cols.var_name, i.var_name, get_matrix_cols(v1));
 
         Variable mla;
         generate_tmp(&mla);
-        emet("%s := %s ADDI %s", mla.var_name, i_cols.var_name, j.var_name);
+        emet_in_list(false, "%s := %s ADDI %s", mla.var_name, i_cols.var_name, j.var_name);
 
         Variable idx;
         generate_tmp(&idx);
-        emet("%s := %s MULI 4", idx.var_name, mla.var_name);
+        emet_in_list(false, "%s := %s MULI 4", idx.var_name, mla.var_name);
 
-        emet("%s[%s] := %s", v1.var_name, idx.var_name, var_to_string(v2, v2_str, v2_len));
+        emet_in_list(false, "%s[%s] := %s", v1.var_name, idx.var_name, var_to_string(v2, v2_str, v2_len));
     } else {
-        emet("%s[%i] := %s", v1.var_name, (get_val_int(i) * get_matrix_cols(v1) + get_val_int(j)) * 4, var_to_string(v2, v2_str, v2_len));
+        emet_in_list(false, "%s[%i] := %s", v1.var_name, (get_val_int(i) * get_matrix_cols(v1) + get_val_int(j)) * 4, var_to_string(v2, v2_str, v2_len));
     }
 }
 
 void emet_function_assignation(Variable v1, Variable v2) {
     v1.type = v2.val.Function.return_type;
     v1.is_variable = true;
-    emet("%s := CALL %s,%i", v1.var_name, v2.var_name, v2.val.Function.n_args);
+    emet_in_list(false, "%s := CALL %s,%i", v1.var_name, v2.var_name, v2.val.Function.n_args);
 }
 
 void emet_assignation_vector(Variable v1, Variable v2) {
@@ -481,7 +483,7 @@ void emet_assignation_vector(Variable v1, Variable v2) {
     char *str = (char*) malloc(12 * sizeof(char));
 
     for(int i = 0; i < v2_len; i++) {
-        emet("%s := %s", var_to_string_idx(v1, var_name, 12, i * 4), get_string_elem(v2, i, str));
+        emet_in_list(false, "%s := %s", var_to_string_idx(v1, var_name, 12, i * 4), get_string_elem(v2, i, str));
     }
 
     store_val(v1);
@@ -505,7 +507,7 @@ void emet_assignation_matrix(Variable v1, Variable v2) {
 
     for(int i = 0; i < mtx_cols; i++) {
         for(int j = 0; j < mtx_cols; j++) {
-            emet("%s := %s", var_to_string_idx(v1, var_name, 12, (i * mtx_cols + j) * 4), get_string_elem(v2, (i * mtx_cols + j), str));
+            emet_in_list(false, "%s := %s", var_to_string_idx(v1, var_name, 12, (i * mtx_cols + j) * 4), get_string_elem(v2, (i * mtx_cols + j), str));
         }
     }
 
@@ -518,7 +520,7 @@ void emet_assignation_matrix(Variable v1, Variable v2) {
 void emet_simple(Variable v1, Variable v2) {
     int v2_len = get_var_string_len(v2);
     char *v2_str = (char*) malloc(v2_len * sizeof(char));
-    emet("%s := %s", v1.var_name, var_to_string(v2, v2_str, v2_len));
+    emet_in_list(false, "%s := %s", v1.var_name, var_to_string(v2, v2_str, v2_len));
     
     v1.type = v2.type;
     v1.is_variable = true;
@@ -551,13 +553,13 @@ void emet_vector_elem(Variable v, Variable i, Variable *res) {
     if(is_variable(i)) {
         Variable idx;
         generate_tmp(&idx);
-        emet("%s := %s MULI 4", idx.var_name, i.var_name);
+        emet_in_list(false, "%s := %s MULI 4", idx.var_name, i.var_name);
         generate_tmp(res);
-        emet("%s := %s[%s]", res->var_name, v.var_name, idx.var_name);
+        emet_in_list(false, "%s := %s[%s]", res->var_name, v.var_name, idx.var_name);
 
     } else {
         generate_tmp(res);
-        emet("%s := %s[%i]", res->var_name, v.var_name, get_val_int(i) * 4);
+        emet_in_list(false, "%s := %s[%i]", res->var_name, v.var_name, get_val_int(i) * 4);
     }
 }
 
@@ -574,48 +576,48 @@ void emet_matrix_elem(Variable m, Variable i, Variable j, Variable *res) {
     if(is_variable(i) && !is_variable(j)) {
         Variable i_cols;
         generate_tmp(&i_cols);
-        emet("%s := %s MULI %i", i_cols.var_name, i.var_name, get_matrix_cols(m));
+        emet_in_list(false, "%s := %s MULI %i", i_cols.var_name, i.var_name, get_matrix_cols(m));
 
         Variable mla;
         generate_tmp(&mla);
-        emet("%s := %s ADDI %i", mla.var_name, i_cols.var_name, get_val_int(j));
+        emet_in_list(false, "%s := %s ADDI %i", mla.var_name, i_cols.var_name, get_val_int(j));
 
         Variable idx;
         generate_tmp(&idx);
-        emet("%s := %s MULI 4", idx.var_name, mla.var_name);
+        emet_in_list(false, "%s := %s MULI 4", idx.var_name, mla.var_name);
 
         generate_tmp(res);
-        emet("%s := %s[%s]", res->var_name, m.var_name, idx.var_name);
+        emet_in_list(false, "%s := %s[%s]", res->var_name, m.var_name, idx.var_name);
     } else if(!is_variable(i) && is_variable(j)) {
         Variable mla;
         generate_tmp(&mla);
-        emet("%s := %i ADDI %s", mla.var_name, get_val_int(i) * get_matrix_cols(m), j.var_name);
+        emet_in_list(false, "%s := %i ADDI %s", mla.var_name, get_val_int(i) * get_matrix_cols(m), j.var_name);
 
         Variable idx;
         generate_tmp(&idx);
-        emet("%s := %s MULI 4", idx.var_name, mla.var_name);
+        emet_in_list(false, "%s := %s MULI 4", idx.var_name, mla.var_name);
 
         generate_tmp(res);
-        emet("%s := %s[%s]", res->var_name, m.var_name, idx.var_name);
+        emet_in_list(false, "%s := %s[%s]", res->var_name, m.var_name, idx.var_name);
 
     } else if(is_variable(i) && is_variable(j)) {
         Variable i_cols;
         generate_tmp(&i_cols);
-        emet("%s := %s MULI %i", i_cols.var_name, i.var_name, get_matrix_cols(m));
+        emet_in_list(false, "%s := %s MULI %i", i_cols.var_name, i.var_name, get_matrix_cols(m));
 
         Variable mla;
         generate_tmp(&mla);
-        emet("%s := %s ADDI %s", mla.var_name, i_cols.var_name, j.var_name);
+        emet_in_list(false, "%s := %s ADDI %s", mla.var_name, i_cols.var_name, j.var_name);
 
         Variable idx;
         generate_tmp(&idx);
-        emet("%s := %s MULI 4", idx.var_name, mla.var_name);
+        emet_in_list(false, "%s := %s MULI 4", idx.var_name, mla.var_name);
 
         generate_tmp(res);
-        emet("%s := %s[%s]", res->var_name, m.var_name, idx.var_name);
+        emet_in_list(false, "%s := %s[%s]", res->var_name, m.var_name, idx.var_name);
     } else {
         generate_tmp(res);
-        emet("%s := %s[%i]", res->var_name, m.var_name, (get_val_int(i) * get_matrix_cols(m) + get_val_int(j)) * 4);
+        emet_in_list(false, "%s := %s[%i]", res->var_name, m.var_name, (get_val_int(i) * get_matrix_cols(m) + get_val_int(j)) * 4);
     }
 
 }
@@ -627,9 +629,9 @@ void emet_print_simple(Variable v) {
 
     if(!is_variable(v)) v.var_name = (char*) malloc(get_var_string_len(v) * sizeof(char));
 
-    emet("PARAM %s", var_to_string(v, v.var_name, get_var_string_len(v)));
+    emet_in_list(false, "PARAM %s", var_to_string(v, v.var_name, get_var_string_len(v)));
 
-    emet("CALL PUT%c,1", is_int(v) ? 'I' : 'F');
+    emet_in_list(false, "CALL PUT%c,1", is_int(v) ? 'I' : 'F');
 }
 
 void emet_print_vector(Variable v) {
@@ -640,10 +642,10 @@ void emet_print_vector(Variable v) {
         emet_assignation_vector(v, v);
     }
 
-    emet("PARAM %s", v.var_name);
-    emet("PARAM %i", get_vector_len(v));
+    emet_in_list(false, "PARAM %s", v.var_name);
+    emet_in_list(false, "PARAM %i", get_vector_len(v));
 
-    emet("CALL PUTV%c,2", is_int_vector(v) ? 'I' : 'F');
+    emet_in_list(false, "CALL PUTV%c,2", is_int_vector(v) ? 'I' : 'F');
 }
 
 void emet_print_matrix(Variable v) {
@@ -654,18 +656,18 @@ void emet_print_matrix(Variable v) {
         emet_assignation_matrix(v, v);
     }
 
-    emet("PARAM %s", v.var_name);
-    emet("PARAM %i", get_matrix_rows(v));
-    emet("PARAM %i", get_matrix_cols(v));
+    emet_in_list(false, "PARAM %s", v.var_name);
+    emet_in_list(false, "PARAM %i", get_matrix_rows(v));
+    emet_in_list(false, "PARAM %i", get_matrix_cols(v));
 
-    emet("CALL PUTM%c,3", is_int_matrix(v) ? 'I' : 'F');
+    emet_in_list(false, "CALL PUTM%c,3", is_int_matrix(v) ? 'I' : 'F');
 }
 
 void emet_print_function(Variable v) {
     Variable tmp;
     generate_tmp(&tmp);
     tmp.type = v.val.Function.return_type;
-    emet("%s := CALL %s,%i", tmp.var_name, v.var_name, v.val.Function.n_args);
+    emet_in_list(false, "%s := CALL %s,%i", tmp.var_name, v.var_name, v.val.Function.n_args);
     emet_print_var(tmp);
 }
 
@@ -695,22 +697,22 @@ void emet_print_var(Variable v) {
 
 //-------------Emet functions-------------
 void emet_end_main() {
-    emet("HALT");
-    emet("END");
+    emet_in_list(false, "HALT");
+    emet_in_list(false, "END");
 }
 
 void emet_start_foo(char *foo_name) {
     reset_numbers();
-    emet("START %s", foo_name);
+    emet_in_list(false, "START %s", foo_name);
 }
 
 void emet_end_foo() {
-    emet("END");
+    emet_in_list(false, "END");
     fprintf(out_file, "\n");
 }
 
 void emet_action_return() {
-    emet("RETURN");
+    emet_in_list(false, "RETURN");
 }
 
 void emet_return(Variable v) {
@@ -727,7 +729,7 @@ void emet_return(Variable v) {
         if(is_vector(v)) emet_assignation_vector(v, v);
     }
 
-    emet("RETURN %s", var_to_string(v, v.var_name, get_var_string_len(v)));
+    emet_in_list(false, "RETURN %s", var_to_string(v, v.var_name, get_var_string_len(v)));
 }
 
 void function_call_emet(char *foo_name, CallArgList *args, Variable *foo) {
@@ -759,7 +761,7 @@ void function_call_emet(char *foo_name, CallArgList *args, Variable *foo) {
             emet_assignation(v, v);
         }
 
-        emet("PARAM %s", v.var_name);
+        emet_in_list(false, "PARAM %s", v.var_name);
 
 
         if(DEBUG) printf("Call arg '%i' of type '%s'\n", i, fancy_print_type(call_type));
@@ -768,7 +770,7 @@ void function_call_emet(char *foo_name, CallArgList *args, Variable *foo) {
 
 
     if(is_action(*foo)){
-        emet("CALL %s,%i", foo_name, n_args);
+        emet_in_list(false, "CALL %s,%i", foo_name, n_args);
     }
 
 }

@@ -109,7 +109,7 @@
 %type<var> function_call;
 
 %%
-prog : function_list start sentence_list {emet_end_main();};
+prog : function_list start sentence_list {emet_end_main(); print_instruction_list();};
 function_list : non_empty_function_list ENTER | %empty;
 non_empty_function_list : non_empty_function_list ENTER function | function;
 start : %empty {emet_start_foo("main");};
