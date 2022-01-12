@@ -92,8 +92,11 @@
 %type<var> or_list;
 %type<var> and_list;
 %type<var> not_list;
-%type<var> relational_list;
+%type<var> bool_relational_list;
 %type<var> boolean_expression;
+%type<var> bool_parenthesis;
+%type<var> bool_value;
+%type<var> bool_equals_list;
 
 %type<args> param_list;
 %type<args> non_empty_param_list;
@@ -226,31 +229,63 @@ function : function_signature ENTER function_sentence_list ENTER END {
 
 expression : add_list{$$ = $1;} | boolean_expression{$$ = $1;};
 
-
-
-boolean_expression : or_list {$$ = $1;};
-
-or_list: relational_list {$$ = $1;} | or_list BOOL_OR relational_list {
-
-}
-
-relational_list : and_list {$$ = $1;} | value BOOL_HIGHER_THAN value {
-
-} | value BOOL_LOWER_THAN value {
-
-} | value BOOL_HIGHER_EQUAL value {
-
-} | value BOOL_LOWER_EQUAL value {
-
+boolean_expression : or_list {
+    $$ = $1;
 };
 
-and_list : not_list {$$ = $1;} | and_list BOOL_AND not_list {
+or_list : or_list BOOL_OR and_list {
+    printf("Bool or\n");
+    // do_bool_or($1, $3, &$$);
+} | and_list {
+    $$ = $1;
+};
 
-}
+and_list : and_list BOOL_AND bool_equals_list {
+    // do_bool_and($1, $3, &$$);
+    printf("Bool and\n");
+} | bool_equals_list {
+    $$ = $1;
+};
+
+bool_equals_list : not_list BOOL_EQUALS not_list {
+    // do_bool_equals($1, $3, &$$);
+} | not_list BOOL_DIFF not_list {
+    // do_bool_diff($1, $3, &$$);
+} | not_list {
+    $$ = $1;
+};
+
+
+bool_relational_list : add_list BOOL_HIGHER_THAN add_list {
+    printf("Higher than\n");
+    // do_bool_higher_than($1, $3, &$$);
+} | add_list BOOL_LOWER_THAN add_list {
+    printf("Lower than\n");
+    // do_bool_lower_than($1, $3, &$$);
+} | add_list BOOL_HIGHER_EQUAL add_list {
+    printf("Higher equal than\n");
+    // do_bool_higher_equal($1, $3, &$$);
+} | add_list BOOL_LOWER_EQUAL add_list {
+    printf("Lower equal than\n");
+    // do_bool_lower_equal($1, $3, &$$);
+};
 
 not_list : BOOL_NOT not_list {
+    // do_bool_not($2, &$$);
+    printf("Bool not\n");
+} | bool_relational_list {
+    $$ = $1;
+} | bool_value {
+    // printf("Bool val\n");
+    $$ = $1;
+};
 
-}
+bool_parenthesis: OPEN_P boolean_expression CLOSE_P {$$ = $2;};
+
+bool_value : bool_parenthesis {$$ = $1;} |
+            BOOL {$$ = $1;};
+
+
 
 
 add_list : add_list ARITHMETIC_ADD mult_list {
@@ -401,13 +436,21 @@ int yyerror(const char *s) {
     exit(EXIT_FAILURE);
 }
 
+/* #define ENTREGA */
 int main(int argc, char **argv) {
+    FILE *out;
+
+    #ifdef ENTREGA
     yyin = fopen(argv[1], "r");
-    FILE *out = fopen(argv[2], "w");
-    /* FILE *out = stdout; */
+    out = fopen(argv[2], "w");
+    #endif
+
+    #ifndef ENTREGA
+    out = stdout;
+    #endif
+
     set_out_file(out);
     yyparse();
-
     fclose(out);
     fclose(yyin);
     return 1;
