@@ -1,6 +1,6 @@
 %option noyywrap
 %{
-    #include "./sintactico.tab.h"
+    #include "sintactico.tab.h"
     #include <stdlib.h>
     #include <stdio.h>
     #include <string.h>
@@ -53,9 +53,14 @@ int_matrix_t            Matrix\{Int32\}
 float_vector_t          Vector\{Float32\}
 int_vector_t            Vector\{Int32\}
 if                      if
+else                    else
 %%
 {if} {
     return IF;
+}
+
+{else} {
+    return ELSE;
 }
 
 {comma} {

@@ -69,6 +69,7 @@
 %token<t> FLOAT_VECTOR_T
 %token RETURN
 %token IF
+%token ELSE
 
 %type<var> int_expression;
 %type<var> float_expression;
@@ -115,7 +116,11 @@
 %type<var> sentence_list;
 %type<var> sentence;
 %type<var> assignation_sentence;
+
+%type<var> ifs;
 %type<var> simple_conditional_sentence;
+%type<var> simple_else_condition_sentence;
+%type<var> skip_else;
 
 
 %%
@@ -127,7 +132,7 @@ sentence_list : sentence_list lambda sentence ENTER {
     completa($1.nexts, $2);
     $$.nexts = $3.nexts;
 } | sentence_list ENTER | %empty {};
-sentence : assignation_sentence | simple_conditional_sentence | expression {emet_print_var($1);};
+sentence : assignation_sentence | ifs | expression {emet_print_var($1);};
 assignation_sentence : ID EQUALS expression {
     emet_assignation($1, $3);
 } | ID OPEN_M expression CLOSE_M EQUALS expression {
@@ -244,6 +249,22 @@ expression : add_list {
     printf("Arithmetic expression\n");
     $$ = $1;
 };
+
+ifs : simple_conditional_sentence | simple_else_condition_sentence;
+
+skip_else : %empty {
+    $$.nexts = create_int_list(get_line_number());
+    emet_in_list(true, "GOTO");
+}
+
+simple_else_condition_sentence : IF boolean_expression ENTER lambda sentence_list skip_else lambda ELSE sentence_list END {
+    printf("Simple if else\n");
+    completa($2.trues, $4);
+    completa($2.falses, $7);
+
+    $$.nexts = fusiona($5.nexts, $9.nexts);
+    $$.nexts = fusiona($$.nexts, $6.nexts);
+}
 
 simple_conditional_sentence : IF boolean_expression ENTER lambda sentence_list END {
     printf("Simple if\n");
