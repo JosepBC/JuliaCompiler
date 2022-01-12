@@ -9,7 +9,8 @@
 
 typedef struct Instruction_t {
     char *instr_str;
-    bool incomplete_goto;
+    bool is_goto;
+    bool completed_goto;
     int goto_line;
 } Instruction;
 
@@ -48,7 +49,24 @@ extern void emet_action_return();
 extern void function_call_emet(char *foo_name, CallArgList *args, Variable *foo);
 
 extern IntList *create_int_list(int initial_val);
+extern IntList *fusiona(IntList *l1, IntList *l2);
+extern void completa(IntList *int_list, int val);
+
+extern void emet_in_list(bool is_goto, char *fmt, ...);
+extern void print_int_list(IntList *l);
 
 extern int get_line_number();
 extern void print_instruction_list();
+
+extern void emet_relational(Variable v1, Variable v2, Variable *res, const char op[4]);
+
+extern void emet_bool_equals(Variable v1, Variable v2, Variable *res);
+extern void emet_bool_diff(Variable v1, Variable v2, Variable *res);
+
+extern void emet_bool_higher_than(Variable v1, Variable v2, Variable *res);
+extern void emet_bool_lower_than(Variable v1, Variable v2, Variable *res);
+extern void emet_bool_higher_equal(Variable v1, Variable v2, Variable *res);
+extern void emet_bool_lower_equal(Variable v1, Variable v2, Variable *res);
+
+
 #endif

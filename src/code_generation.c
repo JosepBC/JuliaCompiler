@@ -137,7 +137,7 @@ void print_instruction_list() {
     InstructionList *it = generated_instrucitons;
     while(it != NULL) {
         fprintf(out_file, "%s", it->curr.instr_str);
-        if(it->curr.incomplete_goto) fprintf(out_file, " %i", it->curr.goto_line);
+        if(it->curr.is_goto) fprintf(out_file, " %i", it->curr.goto_line);
         fprintf(out_file, "\n");
         it = it->next;
     }
@@ -187,8 +187,9 @@ InstructionList *get_n_instruction(int instr_idx) {
 void completa(IntList *int_list, int val) {
     while(int_list != NULL) {
         InstructionList *instruction = get_n_instruction(int_list->val);
-        if(!instruction->curr.incomplete_goto) printf("WARN INSTRUCTION '%s' ITS NOT AN INCOMPLETE GOTO\n", instruction->curr.instr_str);
+        if(!instruction->curr.is_goto) printf("WARN INSTRUCTION '%s' ITS NOT AN INCOMPLETE GOTO\n", instruction->curr.instr_str);
         instruction->curr.goto_line = val;
+        instruction->curr.completed_goto = true;
         printf("Completed instruction '%s' with goto to line '%i'\n", instruction->curr.instr_str, instruction->curr.goto_line);
 
         int_list = int_list->next;
@@ -203,6 +204,8 @@ void completa(IntList *int_list, int val) {
  * @return IntList*
  */
 IntList *fusiona(IntList *l1, IntList *l2) {
+    if(l1 == NULL) return l2;
+
     IntList *last_node = l1;
 
     while(last_node->next != NULL) {
@@ -231,7 +234,7 @@ IntList *create_int_list(int initial_val) {
     return l;
 }
 
-void emet_in_list(bool incomplete_goto, char *fmt, ...) {
+void emet_in_list(bool is_goto, char *fmt, ...) {
     va_list arglist;
     char buff[MAXINSTRSIZE];
 
@@ -243,7 +246,8 @@ void emet_in_list(bool incomplete_goto, char *fmt, ...) {
 
     Instruction *newInstr = (Instruction*) malloc(sizeof(Instruction));
     newInstr->instr_str = strdup(buff);
-    newInstr->incomplete_goto = incomplete_goto;
+    newInstr->is_goto = is_goto;
+    newInstr->completed_goto = false;
 
     insert_instruction(*newInstr);
 }
@@ -714,6 +718,13 @@ void emet_print_var(Variable v) {
 
 //-------------Emet functions-------------
 void emet_end_main() {
+
+    InstructionList *it = generated_instrucitons;
+    while(it != NULL) {
+        if(it->curr.is_goto && !it->curr.completed_goto) it->curr.goto_line = line_number;
+        it = it->next;
+    }
+
     emet_in_list(false, "HALT");
     emet_in_list(false, "END");
 }
@@ -790,4 +801,110 @@ void function_call_emet(char *foo_name, CallArgList *args, Variable *foo) {
         emet_in_list(false, "CALL %s,%i", foo_name, n_args);
     }
 
+}
+
+void emet_relational(Variable v1, Variable v2, Variable *res, const char op[4]) {
+    res->trues = create_int_list(line_number);
+    res->falses = create_int_list(line_number + 1);
+
+    int v1_len = get_var_string_len(v1);
+    int v2_len = get_var_string_len(v2);
+
+    char *v1_str = (char*) malloc(v1_len * sizeof(char));
+    char *v2_str = (char*) malloc(v2_len * sizeof(char));
+
+    emet_in_list(true, "IF %s %s %s GOTO", var_to_string(v1, v1_str, v1_len), op, var_to_string(v2, v2_str, v2_len));
+    emet_in_list(true, "GOTO");
+}
+
+//-------------NON literal relational ops-------------
+void emet_general_bool_relational(Variable v1, Variable v2, Variable *res, const char op[4]) {
+    check_variable_existance(&v1);
+    check_variable_existance(&v2);
+
+    if(!is_int_or_float(v1)) printf_error("Ilegal type '%s' in '%s' op 1", fancy_print_type(v1.type), op);
+    if(!is_int_or_float(v2)) printf_error("Ilegal type '%s' in '%s' op 2", fancy_print_type(v2.type), op);
+
+    if(is_float(v1) || is_float(v2)) res->type = Float64;
+    else res->type = Int64;
+
+    if(is_float(*res)) {
+        to_float(v1, &v1);
+        to_float(v2, &v2);
+    }
+
+    int v1_len = get_var_string_len(v1);
+    int v2_len = get_var_string_len(v2);
+
+    char *v1_str = (char*) malloc(v1_len * sizeof(char));
+    char *v2_str = (char*) malloc(v2_len * sizeof(char));
+
+    res->trues = create_int_list(line_number);
+    emet_in_list(true, "IF %s %s%c %s GOTO", var_to_string(v1, v1_str, v1_len), op, is_int(*res) ? 'I' : 'F', var_to_string(v2, v2_str, v2_len));
+
+    res->falses = create_int_list(line_number);
+    emet_in_list(true, "GOTO");
+
+    res->type = Bool;
+}
+
+void emet_bool_higher_than(Variable v1, Variable v2, Variable *res) {
+    printf("Emet bool higher than '%s'>'%s'\n", v1.var_name, v2.var_name);
+    emet_general_bool_relational(v1, v2, res, "GT");
+}
+
+void emet_bool_lower_than(Variable v1, Variable v2, Variable *res) {
+    printf("Emet bool lower than '%s'<'%s'\n", v1.var_name, v2.var_name);
+    emet_general_bool_relational(v1, v2, res, "LT");
+}
+
+void emet_bool_higher_equal(Variable v1, Variable v2, Variable *res) {
+    printf("Emet bool higher equal '%s'>='%s'\n", v1.var_name, v2.var_name);
+    emet_general_bool_relational(v1, v2, res, "GE");
+
+}
+
+void emet_bool_lower_equal(Variable v1, Variable v2, Variable *res) {
+    printf("Emet bool lower equal '%s'<='%s'\n", v1.var_name, v2.var_name);
+    emet_general_bool_relational(v1, v2, res, "LT");
+}
+
+//-------------NON literal eq ops-------------
+void emet_general_equals(Variable v1, Variable v2, Variable *res, const char op[4]) {
+    check_variable_existance(&v1);
+    check_variable_existance(&v2);
+
+    if(!is_int_or_float(v1)) printf_error("Ilegal type '%s' in '%s' op 1", fancy_print_type(v1.type), op);
+    if(!is_int_or_float(v2)) printf_error("Ilegal type '%s' in '%s' op 2", fancy_print_type(v2.type), op);
+
+    if(is_float(v1) || is_float(v2)) res->type = Float64;
+    else res->type = Int64;
+
+    if(is_float(*res)) {
+        to_float(v1, &v1);
+        to_float(v2, &v2);
+    }
+
+    int v1_len = get_var_string_len(v1);
+    int v2_len = get_var_string_len(v2);
+
+    char *v1_str = (char*) malloc(v1_len * sizeof(char));
+    char *v2_str = (char*) malloc(v2_len * sizeof(char));
+
+    res->trues = create_int_list(line_number);
+    emet_in_list(true, "IF %s %s %s GOTO", var_to_string(v1, v1_str, v1_len), op, var_to_string(v2, v2_str, v2_len));
+
+    res->falses = create_int_list(line_number);
+    emet_in_list(true, "GOTO");
+
+    res->type = Bool;
+}
+
+
+void emet_bool_equals(Variable v1, Variable v2, Variable *res) {
+    emet_general_equals(v1, v2, res, "EQ");
+}
+
+void emet_bool_diff(Variable v1, Variable v2, Variable *res) {
+    emet_general_equals(v1, v2, res, "NE");
 }
