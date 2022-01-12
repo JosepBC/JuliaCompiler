@@ -231,7 +231,8 @@ void emet_in_list(bool incomplete_goto, char *fmt, ...) {
     char buff[MAXINSTRSIZE];
 
     va_start(arglist,fmt);
-    vsnprintf(buff, sizeof(buff), fmt, arglist);
+    snprintf(buff, sizeof(buff), "%i: ", line_number++);
+    vsnprintf(buff + strlen(buff), sizeof(buff), fmt, arglist);
     va_end(arglist);
     // printf("%s\n", buff);
 
@@ -240,7 +241,6 @@ void emet_in_list(bool incomplete_goto, char *fmt, ...) {
     newInstr->incomplete_goto = incomplete_goto;
 
     insert_instruction(*newInstr);
-    line_number++;
 }
 
 int get_line_number() {
