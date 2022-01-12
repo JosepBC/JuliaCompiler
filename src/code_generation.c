@@ -47,6 +47,10 @@ char* var_to_string(Variable v, char *str, int size) {
             case Float64:
                 snprintf(str, size, "%f", v.val.Float64);
                 break;
+            case Bool:
+                if(v.val.Bool) snprintf(str, size, "true");
+                else snprintf(str, size, "false");
+                break;
             case Int64Vector:
             case Float64Vector:
             case Int64Matrix:
@@ -634,6 +638,16 @@ void emet_print_simple(Variable v) {
     emet_in_list(false, "CALL PUT%c,1", is_int(v) ? 'I' : 'F');
 }
 
+void emet_print_bool(Variable v) {
+    if(!is_bool(v)) printf_error("Ilegal type '%s' in emet print simple", fancy_print_type(v.type));
+
+    if(!is_variable(v)) v.var_name = (char*) malloc(get_var_string_len(v) * sizeof(char));
+
+    emet_in_list(false, "PARAM %s", var_to_string(v, v.var_name, get_var_string_len(v)));
+
+    emet_in_list(false, "CALL PUTB,1");
+}
+
 void emet_print_vector(Variable v) {
     if(!is_vector(v)) printf_error("Ilegal type '%s' in emet vector", fancy_print_type(v.type));
 
@@ -678,6 +692,9 @@ void emet_print_var(Variable v) {
         case Int64:
         case Float64:
             emet_print_simple(v);
+            break;
+        case Bool:
+            emet_print_bool(v);
             break;
         case Int64Matrix:
         case Float64Matrix:

@@ -105,6 +105,8 @@ int get_var_string_len(Variable v) {
         case Int64:
         case Float64:
             return 12;
+        case Bool:
+            return 6;
     }
 }
 
@@ -120,6 +122,7 @@ const char* fancy_print_type(Type v) {
         case Unknown: return "Unknown";
         case Int64: return "Int32";
         case Float64: return "Float32";
+        case Bool: return "Bool";
         case Int64Vector: return "Vector{Int32}";
         case Int64Matrix: return "Matrix{Int32}";
         case Float64Vector: return "Vector{Float32}";
