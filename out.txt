@@ -4,12 +4,15 @@
 4: $t2 := 7.000000 SUBF $t1
 5: total := $t2
 6: IF total GTF 666.599976 GOTO 8
-7: GOTO 12
+7: GOTO 13
 8: IF total NE 500.000000 GOTO 10
-9: GOTO 12
+9: GOTO 13
 10: $t3 := i ADDI 1
 11: i := $t3
-12: PARAM i
-13: CALL PUTI,1
-14: HALT
-15: END
+12: GOTO 15
+13: $t4 := i SUBI 1
+14: i := $t4
+15: PARAM i
+16: CALL PUTI,1
+17: HALT
+18: END
