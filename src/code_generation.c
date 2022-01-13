@@ -188,9 +188,13 @@ void completa(IntList *int_list, int val) {
     while(int_list != NULL) {
         InstructionList *instruction = get_n_instruction(int_list->val);
         if(!instruction->curr.is_goto) printf("WARN INSTRUCTION '%s' ITS NOT AN INCOMPLETE GOTO\n", instruction->curr.instr_str);
-        instruction->curr.goto_line = val;
-        instruction->curr.completed_goto = true;
-        printf("Completed instruction '%s' with goto to line '%i'\n", instruction->curr.instr_str, instruction->curr.goto_line);
+        if(instruction->curr.completed_goto) {
+            printf("WARN INSTRUCTION '%s' ITS A COMPLETED GOTO TO LINE '%i'!\n", instruction->curr.instr_str, instruction->curr.goto_line);
+        } else {
+            instruction->curr.goto_line = val;
+            instruction->curr.completed_goto = true;
+            printf("Completed instruction '%s' with goto to line '%i'\n", instruction->curr.instr_str, instruction->curr.goto_line);
+        }
 
         int_list = int_list->next;
     }
