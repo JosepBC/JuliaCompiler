@@ -1,7 +1,6 @@
 %code requires {
     #include "types.h"
     #include "arithmetic_ops.h"
-    #include "bool_ops.h"
     #include "code_generation.h"
 }
 
