@@ -540,6 +540,7 @@ int main(int argc, char **argv) {
     #endif
 
     #ifndef ENTREGA
+    yyin = fopen(argv[1], "r");
     out = stdout;
     #endif
 
