@@ -1,14 +1,10 @@
-i = 1 
-total = (1.0 + 2 * 3) - i 
-while total < 1000.0 do
-    if i * 2 == 1 
-        total = total * 2 
-    else 
-        total = total + 1 
-    end 
-    j = -i 
-    if total > 666.6 || total == 500.0 
-        i = i + 1 
-    end 
-end 
-total
+p = 1
+for i in 10:20
+    p = p + 2
+    if i > 2 && i % 2 == 0
+        p = p + 1
+    else
+        p = p - 1
+    end
+end
+p
