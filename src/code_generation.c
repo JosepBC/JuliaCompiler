@@ -733,7 +733,9 @@ void emet_end_main() {
         if(it->curr.is_goto && !it->curr.completed_goto) {
             it->curr.goto_line = line_number;
             if(DEBUG) printf("[HALT] Completed instruction '%s' with goto to line '%i'\n", it->curr.instr_str, it->curr.goto_line);
+            it->curr.completed_goto = true;
         }
+
         it = it->next;
     }
 
