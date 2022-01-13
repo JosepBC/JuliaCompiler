@@ -54,7 +54,17 @@ float_vector_t          Vector\{Float32\}
 int_vector_t            Vector\{Int32\}
 if                      if
 else                    else
+while                   while
+do                      do
 %%
+{while} {
+    return WHILE;
+}
+
+{do} {
+    return DO;
+}
+
 {if} {
     return IF;
 }

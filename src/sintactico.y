@@ -70,6 +70,8 @@
 %token RETURN
 %token IF
 %token ELSE
+%token WHILE
+%token DO
 
 %type<var> int_expression;
 %type<var> float_expression;
@@ -123,6 +125,9 @@
 %type<var> simple_else_condition_sentence;
 %type<var> skip_else;
 
+%type<var> loops;
+%type<var> while;
+
 
 %%
 prog : function_list start sentence_list {emet_end_main(); print_instruction_list();};
@@ -133,7 +138,7 @@ sentence_list : sentence_list lambda sentence ENTER {
     completa($1.nexts, $2);
     $$.nexts = $3.nexts;
 } | sentence_list ENTER | %empty {};
-sentence : assignation_sentence | ifs | expression {emet_print_var($1);};
+sentence : assignation_sentence | ifs | loops | expression {emet_print_var($1);};
 assignation_sentence : ID EQUALS expression {
     emet_assignation($1, $3);
 } | ID OPEN_M expression CLOSE_M EQUALS expression {
@@ -253,12 +258,21 @@ expression : add_list {
     $$ = $1;
 };
 
+loops : while {};
+
+while : WHILE lambda boolean_expression DO lambda sentence_list END {
+    completa($3.trues, $5);
+    completa($6.nexts, $2);
+    emet_in_list(false, "GOTO %i", $2);
+    $$.nexts = $3.falses;
+};
+
 ifs : simple_conditional_sentence | simple_else_condition_sentence;
 
 skip_else : %empty {
     $$.nexts = create_int_list(get_line_number());
     emet_in_list(true, "GOTO");
-}
+};
 
 simple_else_condition_sentence : IF boolean_expression ENTER lambda sentence_list skip_else lambda ELSE sentence_list END {
     if(DEBUG) printf("Simple if else\n");
@@ -267,13 +281,13 @@ simple_else_condition_sentence : IF boolean_expression ENTER lambda sentence_lis
 
     $$.nexts = fusiona($5.nexts, $9.nexts);
     $$.nexts = fusiona($$.nexts, $6.nexts);
-}
+};
 
 simple_conditional_sentence : IF boolean_expression ENTER lambda sentence_list END {
     if(DEBUG) printf("Simple if\n");
     completa($2.trues, $4);
     $$.nexts = fusiona($2.falses, $5.nexts);
-}
+};
 
 boolean_expression : or_list {
     $$ = $1;
@@ -317,7 +331,7 @@ bool_equals_list : add_list BOOL_EQUALS add_list {
     emet_bool_diff($1, $3, &$$);
 } | bool_relational_list {
     $$ = $1;
-}
+};
 
 
 bool_relational_list : add_list BOOL_HIGHER_THAN add_list {
@@ -388,7 +402,7 @@ add_list : add_list ARITHMETIC_ADD mult_list {
 
     if(is_literal($1) && is_literal($3)) do_sub($1, $3, &$$);
     else emet_sub($1, $3, &$$);
-} | mult_list {$$ = $1;}
+} | mult_list {$$ = $1;};
 
 
 mult_list : mult_list ARITHMETIC_MULT pow_list {
@@ -416,7 +430,7 @@ mult_list : mult_list ARITHMETIC_MULT pow_list {
 
 } | pow_list { 
     $$ = $1;
-}
+};
 
 pow_list : pow_list ARITHMETIC_POW value {
     if(DEBUG) printf("Pow list\n");
@@ -427,7 +441,7 @@ pow_list : pow_list ARITHMETIC_POW value {
 } | value {
     if(DEBUG) printf("expression '%s'\n", $1.var_name);
     $$ = $1;
-}
+};
 
 
 
