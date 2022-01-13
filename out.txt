@@ -1,29 +1,21 @@
 1: START main
-2: p := 1
-3: $t1 := 10 ADDI p
-4: startv := $t1
-5: increment := 2
-6: $t2 := startv ADDI p
-7: $t3 := increment ADDI 6
-8: $t4 := startv ADDI 20
-9: i := $t2
-10: IF i LEI $t4 GOTO 12
-11: GOTO 26
-12: $t5 := p ADDI 2
-13: p := $t5
-14: IF i GTI 2 GOTO 16
-15: GOTO 22
-16: $t6 := i MODI 2
-17: IF $t6 EQ 0 GOTO 19
-18: GOTO 22
-19: $t7 := p ADDI 1
-20: p := $t7
-21: GOTO 24
-22: $t8 := p SUBI 1
-23: p := $t8
-24: i := i + $t3
-25: GOTO 10
-26: PARAM p
-27: CALL PUTI,1
-28: HALT
-29: END
+2: i := 10
+3: IF i LTI 10 GOTO 5
+4: GOTO 8
+5: $t1 := i ADDI 1
+6: i := $t1
+7: GOTO 18
+8: IF i EQ 10 GOTO 10
+9: GOTO 13
+10: $t2 := i ADDI 2
+11: i := $t2
+12: GOTO 18
+13: IF i GTI 10 GOTO 15
+14: GOTO 18
+15: $t3 := i ADDI 3
+16: i := $t3
+17: GOTO 18
+18: PARAM i
+19: CALL PUTI,1
+20: HALT
+21: END

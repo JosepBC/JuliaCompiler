@@ -1,12 +1,9 @@
-p = 1
-startv = 10 + p
-increment = 2
-for i in startv+p:increment+2*3:startv+20
-    p = p + 2
-    if i > 2 && i % 2 == 0
-        p = p + 1
-    else
-        p = p - 1
-    end
+i = 10
+if i < 10
+    i = i + 1
+elseif i == 10
+    i = i + 2
+elseif i > 10
+    i = i + 3
 end
-p
+i
