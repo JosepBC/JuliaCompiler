@@ -543,6 +543,11 @@ void emet_simple(Variable v1, Variable v2) {
 }
 
 void emet_assignation(Variable v1, Variable v2) {
+    if(v2.is_variable && v2.var_name[0] != '$') {
+        if(!val_exists_in_symtab(v2.var_name)) printf_error("Undefined variable '%s'", v2.var_name);
+        get_val(v2.var_name, &v2);
+    }
+
     if(is_matrix(v2)) emet_assignation_matrix(v1, v2);
     else if(is_vector(v2)) emet_assignation_vector(v1, v2);
     else if(is_function(v2)) emet_function_assignation(v1, v2);
