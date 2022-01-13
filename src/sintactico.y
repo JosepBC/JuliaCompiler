@@ -250,7 +250,6 @@ function : function_signature ENTER function_sentence_list ENTER END {
 };
 
 expression : add_list {
-    printf("Arithmetic expression\n");
     $$ = $1;
 };
 
@@ -262,7 +261,7 @@ skip_else : %empty {
 }
 
 simple_else_condition_sentence : IF boolean_expression ENTER lambda sentence_list skip_else lambda ELSE sentence_list END {
-    printf("Simple if else\n");
+    if(DEBUG) printf("Simple if else\n");
     completa($2.trues, $4);
     completa($2.falses, $7);
 
@@ -271,7 +270,7 @@ simple_else_condition_sentence : IF boolean_expression ENTER lambda sentence_lis
 }
 
 simple_conditional_sentence : IF boolean_expression ENTER lambda sentence_list END {
-    printf("Simple if\n");
+    if(DEBUG) printf("Simple if\n");
     completa($2.trues, $4);
     $$.nexts = fusiona($2.falses, $5.nexts);
 }
@@ -281,7 +280,7 @@ boolean_expression : or_list {
 };
 
 or_list : or_list BOOL_OR lambda and_list {
-    printf("Bool or\n");
+    if(DEBUG) printf("Bool or\n");
 
     $$.trues = fusiona($1.trues, $4.trues);
     $$.falses = $4.falses;
@@ -294,7 +293,7 @@ or_list : or_list BOOL_OR lambda and_list {
 };
 
 and_list : and_list BOOL_AND lambda bool_equals_list {
-    printf("Bool and\n");
+    if(DEBUG) printf("Bool and\n");
 
     $$.trues = $4.trues;
     $$.falses = fusiona($1.falses, $4.falses);
@@ -307,12 +306,12 @@ and_list : and_list BOOL_AND lambda bool_equals_list {
 };
 
 bool_equals_list : add_list BOOL_EQUALS add_list {
-    printf("Bool equals\n");
+    if(DEBUG) printf("Bool equals\n");
 
     // if(is_literal($1) && is_literal($3)) do_bool_equals($1, $3, &$$);
     emet_bool_equals($1, $3, &$$);
 } | add_list BOOL_DIFF add_list {
-    printf("Bool diff\n");
+    if(DEBUG) printf("Bool diff\n");
 
     // if(is_literal($1) && is_literal($3)) do_bool_diff($1, $3, &$$);
     emet_bool_diff($1, $3, &$$);
@@ -322,22 +321,22 @@ bool_equals_list : add_list BOOL_EQUALS add_list {
 
 
 bool_relational_list : add_list BOOL_HIGHER_THAN add_list {
-    printf("Higher than\n");
+    if(DEBUG) printf("Higher than\n");
 
     //if(is_literal($1) && is_literal($3)) do_bool_higher_than($1, $3, &$$);
     emet_bool_higher_than($1, $3, &$$);
 } | add_list BOOL_LOWER_THAN add_list {
-    printf("Lower than\n");
+    if(DEBUG) printf("Lower than\n");
 
     //if(is_literal($1) && is_literal($3)) do_bool_lower_than($1, $3, &$$);
     emet_bool_lower_than($1, $3, &$$);
 } | add_list BOOL_HIGHER_EQUAL add_list {
-    printf("Higher equal than\n");
+    if(DEBUG) printf("Higher equal than\n");
 
     //if(is_literal($1) && is_literal($3)) do_bool_higher_equal($1, $3, &$$);
     emet_bool_higher_equal($1, $3, &$$);
 } | add_list BOOL_LOWER_EQUAL add_list {
-    printf("Lower equal than\n");
+    if(DEBUG) printf("Lower equal than\n");
 
     //if(is_literal($1) && is_literal($3)) do_bool_lower_equal($1, $3, &$$);
     emet_bool_lower_equal($1, $3, &$$);
@@ -346,7 +345,7 @@ bool_relational_list : add_list BOOL_HIGHER_THAN add_list {
 };
 
 not_list : BOOL_NOT not_list {
-    printf("Bool not\n");
+    if(DEBUG) printf("Bool not\n");
 
     $$.trues = $2.falses;
     $$.falses = $2.trues;

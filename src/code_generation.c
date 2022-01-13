@@ -193,7 +193,7 @@ void completa(IntList *int_list, int val) {
         } else {
             instruction->curr.goto_line = val;
             instruction->curr.completed_goto = true;
-            printf("Completed instruction '%s' with goto to line '%i'\n", instruction->curr.instr_str, instruction->curr.goto_line);
+            if(DEBUG) printf("Completed instruction '%s' with goto to line '%i'\n", instruction->curr.instr_str, instruction->curr.goto_line);
         }
 
         int_list = int_list->next;
@@ -725,7 +725,10 @@ void emet_end_main() {
 
     InstructionList *it = generated_instrucitons;
     while(it != NULL) {
-        if(it->curr.is_goto && !it->curr.completed_goto) it->curr.goto_line = line_number;
+        if(it->curr.is_goto && !it->curr.completed_goto) {
+            it->curr.goto_line = line_number;
+            if(DEBUG) printf("[HALT] Completed instruction '%s' with goto to line '%i'\n", it->curr.instr_str, it->curr.goto_line);
+        }
         it = it->next;
     }
 
@@ -852,23 +855,23 @@ void emet_general_bool_relational(Variable v1, Variable v2, Variable *res, const
 }
 
 void emet_bool_higher_than(Variable v1, Variable v2, Variable *res) {
-    printf("Emet bool higher than '%s'>'%s'\n", v1.var_name, v2.var_name);
+    if(DEBUG) printf("Emet bool higher than '%s'>'%s'\n", v1.var_name, v2.var_name);
     emet_general_bool_relational(v1, v2, res, "GT");
 }
 
 void emet_bool_lower_than(Variable v1, Variable v2, Variable *res) {
-    printf("Emet bool lower than '%s'<'%s'\n", v1.var_name, v2.var_name);
+    if(DEBUG) printf("Emet bool lower than '%s'<'%s'\n", v1.var_name, v2.var_name);
     emet_general_bool_relational(v1, v2, res, "LT");
 }
 
 void emet_bool_higher_equal(Variable v1, Variable v2, Variable *res) {
-    printf("Emet bool higher equal '%s'>='%s'\n", v1.var_name, v2.var_name);
+    if(DEBUG) printf("Emet bool higher equal '%s'>='%s'\n", v1.var_name, v2.var_name);
     emet_general_bool_relational(v1, v2, res, "GE");
 
 }
 
 void emet_bool_lower_equal(Variable v1, Variable v2, Variable *res) {
-    printf("Emet bool lower equal '%s'<='%s'\n", v1.var_name, v2.var_name);
+    if(DEBUG) printf("Emet bool lower equal '%s'<='%s'\n", v1.var_name, v2.var_name);
     emet_general_bool_relational(v1, v2, res, "LT");
 }
 
