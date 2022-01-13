@@ -367,8 +367,6 @@ or_list : or_list BOOL_OR lambda and_list {
     $$.falses = $4.falses;
     completa($1.falses, $3);
 
-    // if(is_literal($1) && is_literal($3)) do_bool_or($1, $3, &$$);
-    // else emet_bool_or($1, $3, &$$);
 } | and_list {
     $$ = $1;
 };
@@ -380,8 +378,6 @@ and_list : and_list BOOL_AND lambda bool_equals_list {
     $$.falses = fusiona($1.falses, $4.falses);
     completa($1.trues, $3);
 
-    // if(is_literal($1) && is_literal($3)) do_bool_and($1, $3, &$$);
-    // else emet_bool_and($1, $3, &$$);
 } | bool_equals_list {
     $$ = $1;
 };
@@ -389,12 +385,10 @@ and_list : and_list BOOL_AND lambda bool_equals_list {
 bool_equals_list : add_list BOOL_EQUALS add_list {
     if(DEBUG) printf("Bool equals\n");
 
-    // if(is_literal($1) && is_literal($3)) do_bool_equals($1, $3, &$$);
     emet_bool_equals($1, $3, &$$);
 } | add_list BOOL_DIFF add_list {
     if(DEBUG) printf("Bool diff\n");
 
-    // if(is_literal($1) && is_literal($3)) do_bool_diff($1, $3, &$$);
     emet_bool_diff($1, $3, &$$);
 } | bool_relational_list {
     $$ = $1;
@@ -404,22 +398,18 @@ bool_equals_list : add_list BOOL_EQUALS add_list {
 bool_relational_list : add_list BOOL_HIGHER_THAN add_list {
     if(DEBUG) printf("Higher than\n");
 
-    //if(is_literal($1) && is_literal($3)) do_bool_higher_than($1, $3, &$$);
     emet_bool_higher_than($1, $3, &$$);
 } | add_list BOOL_LOWER_THAN add_list {
     if(DEBUG) printf("Lower than\n");
 
-    //if(is_literal($1) && is_literal($3)) do_bool_lower_than($1, $3, &$$);
     emet_bool_lower_than($1, $3, &$$);
 } | add_list BOOL_HIGHER_EQUAL add_list {
     if(DEBUG) printf("Higher equal than\n");
 
-    //if(is_literal($1) && is_literal($3)) do_bool_higher_equal($1, $3, &$$);
     emet_bool_higher_equal($1, $3, &$$);
 } | add_list BOOL_LOWER_EQUAL add_list {
     if(DEBUG) printf("Lower equal than\n");
 
-    //if(is_literal($1) && is_literal($3)) do_bool_lower_equal($1, $3, &$$);
     emet_bool_lower_equal($1, $3, &$$);
 } | not_list {
     $$ = $1;
@@ -431,10 +421,7 @@ not_list : BOOL_NOT not_list {
     $$.trues = $2.falses;
     $$.falses = $2.trues;
 
-    // if(is_literal($2)) do_bool_not($2, &$$);
-    // else emet_bool_not($2, &$$);
 } | bool_value {
-    // printf("Bool val\n");
     $$ = $1;
 };
 
@@ -556,7 +543,6 @@ value : int_expression {$$ = $1;} | float_expression {$$ = $1;} |
 m : OPEN_M row_list CLOSE_M {
     if(DEBUG) print_node_row($2);
     store_matrix($2, &$$);
-    // if(DEBUG) print_var("matrix declaration", $$);
 };
 
 row_list : row SEMICOLON row_list {
