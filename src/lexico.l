@@ -59,7 +59,12 @@ do                      do
 for                     for
 in                      in
 colon                   :
+elseif                  elseif
 %%
+{elseif} {
+    return ELSEIF;
+}
+
 {colon} {
     return COLON;
 }

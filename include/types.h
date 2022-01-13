@@ -32,6 +32,7 @@ typedef struct Variable_t {
     IntList *nexts;
     int for_condition_line;
     char *for_increment;
+    int elseif_line;
     union {
         char *String;
         int Int64;

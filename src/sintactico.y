@@ -75,6 +75,7 @@
 %token FOR
 %token IN
 %token COLON
+%token ELSEIF
 
 %type<var> int_expression;
 %type<var> float_expression;
@@ -127,6 +128,10 @@
 %type<var> simple_conditional_sentence;
 %type<var> simple_else_condition_sentence;
 %type<var> skip_else;
+%type<var> if_elseif;
+%type<var> if;
+%type<var> elseif;
+%type<var> elseif_list;
 
 %type<var> loops;
 %type<var> while;
@@ -288,7 +293,38 @@ while : WHILE lambda boolean_expression DO lambda sentence_list END {
     $$.nexts = $3.falses;
 };
 
-ifs : simple_conditional_sentence | simple_else_condition_sentence;
+ifs : simple_conditional_sentence | simple_else_condition_sentence | if_elseif;
+
+if_elseif : if elseif_list lambda END {
+    completa($1.nexts, $2.elseif_line);
+
+    $2.falses = fusiona($1.falses, $2.falses);
+    completa($2.falses, $3);
+    $$.nexts = $2.nexts;
+};
+
+elseif_list : elseif_list elseif {
+    completa($1.nexts, $2.elseif_line);
+    $$.nexts = $2.nexts;
+    $$.falses = fusiona($1.falses, $2.falses);
+} | elseif;
+
+if : IF boolean_expression ENTER lambda sentence_list {
+    $$.falses = create_int_list(get_line_number());
+    emet_in_list(true, "GOTO");
+
+    completa($2.trues, $4);
+    $$.nexts = fusiona($2.falses, $5.nexts);
+};
+
+elseif : ELSEIF lambda boolean_expression ENTER lambda sentence_list {
+    $$.falses = create_int_list(get_line_number());
+    emet_in_list(true, "GOTO");
+
+    completa($3.trues, $5);
+    $$.elseif_line = $2;
+    $$.nexts = fusiona($3.falses, $6.nexts);
+};
 
 skip_else : %empty {
     $$.nexts = create_int_list(get_line_number());
