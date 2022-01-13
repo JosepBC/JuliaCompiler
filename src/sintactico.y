@@ -72,6 +72,9 @@
 %token ELSE
 %token WHILE
 %token DO
+%token FOR
+%token IN
+%token COLON
 
 %type<var> int_expression;
 %type<var> float_expression;
@@ -127,6 +130,8 @@
 
 %type<var> loops;
 %type<var> while;
+%type<var> for;
+%type<var> for_header;
 
 
 %%
@@ -258,7 +263,21 @@ expression : add_list {
     $$ = $1;
 };
 
-loops : while {};
+loops : while | for;
+
+for_header : FOR id_expression IN add_list COLON add_list ENTER {
+    $$ = $2;
+    // printf("for '%s' in '%i':'%i'\n", $2.var_name ,$4.val.Int64, $6.val.Int64);
+    emet_for_header($2, $4, $6, &$$);
+
+}
+
+for : for_header sentence_list END {
+    completa($2.nexts, get_line_number());
+    emet_in_list(false, "%s := %s + 1", $1.var_name, $1.var_name);
+    emet_in_list(false, "GOTO %i", $1.for_condition_line);
+    $$.nexts = $1.nexts;
+}
 
 while : WHILE lambda boolean_expression DO lambda sentence_list END {
     completa($3.trues, $5);

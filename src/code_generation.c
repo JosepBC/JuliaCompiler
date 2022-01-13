@@ -88,7 +88,7 @@ void check_variable_existance(Variable *v) {
     Variable var;
     if(v->is_variable) {
         if(v->var_name[0] == '$') return;
-        if(!val_exists_in_symtab(v->var_name)) printf_error("Undefined variable '%s'", v->var_name);
+        if(!val_exists_in_symtab(v->var_name)) printf_error("Undefined variable '%s' type: '%s'", v->var_name, fancy_print_type(v->type));
         get_val(v->var_name, &var);
 
         if(is_function(var)){
@@ -879,7 +879,7 @@ void emet_bool_higher_equal(Variable v1, Variable v2, Variable *res) {
 
 void emet_bool_lower_equal(Variable v1, Variable v2, Variable *res) {
     if(DEBUG) printf("Emet bool lower equal '%s'<='%s'\n", v1.var_name, v2.var_name);
-    emet_general_bool_relational(v1, v2, res, "LT");
+    emet_general_bool_relational(v1, v2, res, "LE");
 }
 
 //-------------NON literal eq ops-------------
@@ -920,4 +920,28 @@ void emet_bool_equals(Variable v1, Variable v2, Variable *res) {
 
 void emet_bool_diff(Variable v1, Variable v2, Variable *res) {
     emet_general_equals(v1, v2, res, "NE");
+}
+
+
+void emet_for_header(Variable for_id, Variable start, Variable end, Variable *res) {
+    if(!is_variable(for_id)) printf_error("For id must be a variable!\n");
+    store_val(for_id);
+    check_variable_existance(&for_id);
+    check_variable_existance(&start);
+    check_variable_existance(&end);
+
+    if(!is_int(start)) printf_error("Ilegal type '%s' in for start", fancy_print_type(start.type));
+    if(!is_int(end)) printf_error("Ilegal type '%s' in for end", fancy_print_type(end.type));
+
+    int start_len = get_var_string_len(start);
+    int end_len = get_var_string_len(end);
+
+    char *start_str = (char*) malloc(start_len * sizeof(char));
+    char *end_str = (char*) malloc(end_len * sizeof(char));
+    emet_in_list(false, "%s := %s", for_id.var_name, var_to_string(start, start_str, start_len));
+    res->for_condition_line = line_number;
+    emet_in_list(false, "IF %s LEI %s GOTO %i", for_id.var_name, var_to_string(end, end_str, end_len), line_number + 2);
+
+    res->nexts = create_int_list(line_number);
+    emet_in_list(true, "GOTO");
 }

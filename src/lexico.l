@@ -56,7 +56,22 @@ if                      if
 else                    else
 while                   while
 do                      do
+for                     for
+in                      in
+colon                   :
 %%
+{colon} {
+    return COLON;
+}
+
+{in} {
+    return IN;
+}
+
+{for} {
+    return FOR;
+}
+
 {while} {
     return WHILE;
 }
