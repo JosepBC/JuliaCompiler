@@ -68,6 +68,6 @@ extern void emet_bool_lower_than(Variable v1, Variable v2, Variable *res);
 extern void emet_bool_higher_equal(Variable v1, Variable v2, Variable *res);
 extern void emet_bool_lower_equal(Variable v1, Variable v2, Variable *res);
 
-extern void emet_for_header(Variable for_id, Variable start, Variable end, Variable *res);
-
+extern void emet_simple_for_header(Variable for_id, Variable start, Variable end, Variable *res);
+extern void emet_increment_for_header(Variable for_id, Variable start, Variable increment, Variable end, Variable *res);
 #endif

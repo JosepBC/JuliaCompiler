@@ -267,14 +267,16 @@ loops : while | for;
 
 for_header : FOR id_expression IN add_list COLON add_list ENTER {
     $$ = $2;
-    // printf("for '%s' in '%i':'%i'\n", $2.var_name ,$4.val.Int64, $6.val.Int64);
-    emet_for_header($2, $4, $6, &$$);
+    emet_simple_for_header($2, $4, $6, &$$);
 
+} | FOR id_expression IN add_list COLON add_list COLON add_list ENTER {
+    $$ = $2;
+    emet_increment_for_header($2, $4, $6, $8, &$$);
 }
 
 for : for_header sentence_list END {
     completa($2.nexts, get_line_number());
-    emet_in_list(false, "%s := %s + 1", $1.var_name, $1.var_name);
+    emet_in_list(false, "%s := %s + %s", $1.var_name, $1.var_name, $1.for_increment);
     emet_in_list(false, "GOTO %i", $1.for_condition_line);
     $$.nexts = $1.nexts;
 }

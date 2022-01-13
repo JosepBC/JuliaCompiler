@@ -945,3 +945,18 @@ void emet_for_header(Variable for_id, Variable start, Variable end, Variable *re
     res->nexts = create_int_list(line_number);
     emet_in_list(true, "GOTO");
 }
+
+void emet_simple_for_header(Variable for_id, Variable start, Variable end, Variable *res) {
+    emet_for_header(for_id, start, end, res);
+
+    res->for_increment = (char*) malloc(2 * sizeof(char));
+    res->for_increment = "1";
+}
+
+void emet_increment_for_header(Variable for_id, Variable start, Variable increment, Variable end, Variable *res) {
+    emet_for_header(for_id, start, end, res);
+
+    int increment_len = get_var_string_len(increment);
+    res->for_increment = (char*) malloc(increment_len * sizeof(char));
+    res->for_increment = var_to_string(increment, res->for_increment, increment_len);
+}
