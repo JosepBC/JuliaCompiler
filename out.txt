@@ -28,28 +28,32 @@
 26: $t4 := CALL foo,1
 27: $t5 := i ADDI $t4
 28: a := $t5
-29: $t6 := I2F i
-30: $t7 := 7.000000 SUBF $t6
-31: total := $t7
-32: IF total GTF 666.599976 GOTO 34
-33: GOTO 43
-34: IF total NE 500.000000 GOTO 36
-35: GOTO 43
-36: $t8 := i ADDI 1
-37: i := $t8
-38: IF total LTF 10.000000 GOTO 40
-39: GOTO 50
-40: $t9 := i ADDI 2
-41: i := $t9
-42: GOTO 50
-43: IF total LTF 10.000000 GOTO 45
-44: GOTO 48
-45: $t10 := i SUBI 1
-46: i := $t10
-47: GOTO 50
-48: $t11 := i SUBI 2
-49: i := $t11
-50: PARAM i
-51: CALL PUTI,1
-52: HALT
-53: END
+29: PARAM i
+30: a := CALL foo,1
+31: PARAM a
+32: CALL foo2,1
+33: $t6 := I2F i
+34: $t7 := 7.000000 SUBF $t6
+35: total := $t7
+36: IF total GTF 666.599976 GOTO 38
+37: GOTO 47
+38: IF total NE 500.000000 GOTO 40
+39: GOTO 47
+40: $t8 := i ADDI 1
+41: i := $t8
+42: IF total LTF 10.000000 GOTO 44
+43: GOTO 54
+44: $t9 := i ADDI 2
+45: i := $t9
+46: GOTO 54
+47: IF total LTF 10.000000 GOTO 49
+48: GOTO 52
+49: $t10 := i SUBI 1
+50: i := $t10
+51: GOTO 54
+52: $t11 := i SUBI 2
+53: i := $t11
+54: PARAM i
+55: CALL PUTI,1
+56: HALT
+57: END

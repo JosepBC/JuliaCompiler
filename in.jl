@@ -18,6 +18,8 @@ end
 
 i = 1
 a = i + foo(i)
+a = foo(i)
+foo2(a)
 total = (1.0 + 2 * 3) - i
 if total > 666.6 && total != 500.0
     i = i + 1
