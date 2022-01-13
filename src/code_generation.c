@@ -818,7 +818,6 @@ void function_call_emet(char *foo_name, CallArgList *args, Variable *foo) {
 
 void emet_relational(Variable v1, Variable v2, Variable *res, const char op[4]) {
     res->trues = create_int_list(line_number);
-    res->falses = create_int_list(line_number + 1);
 
     int v1_len = get_var_string_len(v1);
     int v2_len = get_var_string_len(v2);
@@ -827,6 +826,8 @@ void emet_relational(Variable v1, Variable v2, Variable *res, const char op[4]) 
     char *v2_str = (char*) malloc(v2_len * sizeof(char));
 
     emet_in_list(true, "IF %s %s %s GOTO", var_to_string(v1, v1_str, v1_len), op, var_to_string(v2, v2_str, v2_len));
+
+    res->falses = create_int_list(line_number);
     emet_in_list(true, "GOTO");
 }
 
