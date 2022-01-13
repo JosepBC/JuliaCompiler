@@ -277,14 +277,14 @@ for_header : FOR id_expression IN add_list COLON add_list ENTER {
 } | FOR id_expression IN add_list COLON add_list COLON add_list ENTER {
     $$ = $2;
     emet_increment_for_header($2, $4, $6, $8, &$$);
-}
+};
 
 for : for_header sentence_list END {
     completa($2.nexts, get_line_number());
     emet_in_list(false, "%s := %s + %s", $1.var_name, $1.var_name, $1.for_increment);
     emet_in_list(false, "GOTO %i", $1.for_condition_line);
     $$.nexts = $1.nexts;
-}
+};
 
 while : WHILE lambda boolean_expression DO lambda sentence_list END {
     completa($3.trues, $5);
@@ -300,7 +300,17 @@ if_elseif : if elseif_list lambda END {
 
     $2.falses = fusiona($1.falses, $2.falses);
     completa($2.falses, $3);
+
     $$.nexts = $2.nexts;
+} | if elseif_list ELSE lambda sentence_list lambda END {
+    completa($1.nexts, $2.elseif_line);
+
+    $2.falses = fusiona($1.falses, $2.falses);
+
+    completa($2.falses, $6);
+    completa($2.nexts, $4);
+
+    $$.nexts = $5.nexts;
 };
 
 elseif_list : elseif_list elseif {
