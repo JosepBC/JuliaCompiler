@@ -734,13 +734,12 @@ void emet_end_main() {
 }
 
 void emet_start_foo(char *foo_name) {
-    reset_numbers();
+    // reset_numbers();
     emet_in_list(false, "START %s", foo_name);
 }
 
 void emet_end_foo() {
-    emet_in_list(false, "END");
-    fprintf(out_file, "\n");
+    emet_in_list(false, "END\n");
 }
 
 void emet_action_return() {

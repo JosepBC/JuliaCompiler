@@ -114,6 +114,7 @@
 %type<sq> lambda;
 
 %type<var> sentence_list;
+%type<var> action_sentence_list;
 %type<var> sentence;
 %type<var> assignation_sentence;
 
@@ -230,6 +231,8 @@ header : FOO ID {
 };
 
 function_sentence_list : sentence_list RETURN expression {
+    $1.nexts = fusiona($1.nexts, $3.nexts);
+    completa($1.nexts, get_line_number());
     emet_return($3);
 };
 
@@ -240,6 +243,7 @@ function : function_signature ENTER function_sentence_list ENTER END {
     emet_end_foo();
     pop_symtab();
 } | action_signature ENTER action_sentence_list END {
+    completa($3.nexts, get_line_number());
     emet_action_return();
     emet_end_foo();
     pop_symtab();
