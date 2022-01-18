@@ -1,28 +1,58 @@
-1: START main
-2: i := 10
-3: IF i LTI 10 GOTO 5
-4: GOTO 8
-5: $t1 := i ADDI 1
-6: i := $t1
-7: GOTO 25
-8: IF i EQ 10 GOTO 10
-9: GOTO 13
-10: $t2 := i ADDI 2
-11: i := $t2
-12: GOTO 25
-13: IF i GTI 10 GOTO 15
-14: GOTO 18
-15: $t3 := i ADDI 3
-16: i := $t3
-17: GOTO 25
-18: IF i GTI 20 GOTO 20
-19: GOTO 22
-20: i := 10
-21: GOTO 23
-22: i := 11
-23: $t4 := i ADDI 1
-24: i := $t4
-25: PARAM i
-26: CALL PUTI,1
-27: HALT
-28: END
+1: START foo
+2: IF i GTI 10 GOTO 4
+3: GOTO 7
+4: $t1 := i ADDI 1
+5: i := $t1
+6: GOTO 9
+7: $t2 := i SUBI 1
+8: i := $t2
+9: RETURN i
+10: END
+
+11: START foo2
+12: IF i GTI 10 GOTO 14
+13: GOTO 17
+14: PARAM i
+15: CALL PUTI,1
+16: GOTO 21
+17: $t3 := i ADDI 1
+18: i := $t3
+19: PARAM i
+20: CALL PUTI,1
+21: RETURN
+22: END
+
+23: START main
+24: i := 1
+25: $t4 := i ADDI 6
+26: PARAM $t4
+27: $t5 := CALL foo,1
+28: $t6 := i ADDI $t5
+29: a := $t6
+30: PARAM i
+31: CALL foo2,1
+32: $t7 := I2F i
+33: $t8 := 7.000000 SUBF $t7
+34: total := $t8
+35: IF total GTF 666.599976 GOTO 37
+36: GOTO 41
+37: IF total NE 500.000000 GOTO 39
+38: GOTO 41
+39: $t9 := i ADDI 1
+40: i := $t9
+41: PARAM i
+42: CALL PUTI,1
+43: mtx[0] := 10
+44: mtx[4] := 20
+45: mtx[8] := 2
+46: mtx[12] := 30
+47: mtx[16] := 40
+48: mtx[20] := 3
+49: $t10 := i ADDI 2
+50: $t11 := $t10 MULI 3
+51: $t12 := $t11 ADDI i
+52: $t13 := $t12 MULI 4
+53: $t14 := mtx[$t13]
+54: v := $t14
+55: HALT
+56: END
