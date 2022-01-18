@@ -358,6 +358,11 @@ void emet_pow(Variable v1, Variable v2, Variable *res) {
 }
 
 void emet_mod(Variable v1, Variable v2, Variable *res) {
+    check_variable_existance(&v1);
+    check_variable_existance(&v2);
+    if(!is_int(v1)) printf_error("Ilegal type '%s' in 'MOD' op 1, must be 'Int32'", fancy_print_type(v1.type));
+    if(!is_int(v2)) printf_error("Ilegal type '%s' in 'MOD' op 2, must be 'Int32'", fancy_print_type(v2.type));
+
     general_arithmetic_emet(v1, v2, res, "MOD");
 }
 
@@ -517,7 +522,7 @@ void emet_assignation_matrix(Variable v1, Variable v2) {
 
     char *str = (char*) malloc(12 * sizeof(char));
 
-    for(int i = 0; i < mtx_cols; i++) {
+    for(int i = 0; i < mtx_rows; i++) {
         for(int j = 0; j < mtx_cols; j++) {
             emet_in_list(false, "%s := %s", var_to_string_idx(v1, var_name, 12, (i * mtx_cols + j) * 4), get_string_elem(v2, (i * mtx_cols + j), str));
         }

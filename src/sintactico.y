@@ -472,9 +472,9 @@ mult_list : mult_list ARITHMETIC_MULT pow_list {
 } | mult_list ARITHMETIC_MOD pow_list {
     if(DEBUG) printf("mod\n");
 
-    if(!is_int($1) || !is_int($3)) yyerror("Ilegal type in mod!");
-
     if(is_literal($1) && is_literal($3)) {
+        if(!is_int($1)) printf_error("Ilegal type '%s' in op 1 of mod!\n", fancy_print_type($1.type));
+        if(!is_int($3)) printf_error("Ilegal type '%s' in op 2 of mod!\n", fancy_print_type($3.type));
         $$.type = Int64;
         $$.val.Int64 = $1.val.Int64 % $3.val.Int64;
     } else {
@@ -560,7 +560,6 @@ row_list : row SEMICOLON row_list {
 
 row : number_list {
     $$ = $1;
-
 };
 
 number_list : number number_list {
